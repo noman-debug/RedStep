@@ -40,7 +40,7 @@ const ANCHORS = {
     earth: { x: -1.06, y: -0.49, r: 0.78, d: 16 }, // perspective-fitted to the limb, 3 px RMS
     // positions measured from the reference frame (1706 × 922)
     moon: { x: -0.3, y: 0.52, r: 0.05, d: 20 },
-    mars: { x: 0.84, y: 0.48, r: 0.056, d: 30 },
+    mars: { x: 0.64, y: 0.72, r: 0.056, d: 30 }, // above the copy column, never on it
     rocket: { x: 0.1, y: -0.02, len: 0.52, tilt: 22, d: 8 }, // centre stage, between Earth and the copy
     end: { x: 0.3, y: -0.02, r: 0.36 },
   },
@@ -74,6 +74,8 @@ const PARK_R = 1.24;
 const LAND_T = 2.75; // seconds from 'land here' to the site page
 const ORBIT_W = 0.5; // about one lap every 12 s: clearly moving
 
+// key light on the rocket near Earth: front-left and above, as in the reference picture
+const ROCKET_KEY = new THREE.Vector3(-0.55, 0.45, 0.7).normalize();
 const BOUNCE_EARTH = new THREE.Color(0.07, 0.1, 0.16);
 const BOUNCE_MARS = new THREE.Color(0.16, 0.08, 0.045);
 const rocketSun = new THREE.Vector3();
@@ -515,6 +517,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
     scene.add(lunarRing);
 
     marsRing = orbitLine(park.pts, { todo: '#f0b48f', dashes: 80, alphaTodo: 0.3 });
+    marsRing.visible = false; // no parking orbit any more
     scene.add(marsRing);
   }
 
@@ -597,7 +600,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   function resize(w, h) {
     W = Math.max(1, w);
     H = Math.max(1, h);
-    dpr = Math.min(window.devicePixelRatio || 1, prefersStill() ? 2 : DPR_STEPS[dprStep]);
+    // at least 1.5x even on 1x screens (Windows laptops): the extra pixels smooth the jagged
+    // edges that the GPU's own antialiasing leaves on thin shapes
+    dpr = prefersStill() ? 2 : Math.min(Math.max(window.devicePixelRatio || 1, 1.5), DPR_STEPS[dprStep]);
     renderer.setPixelRatio(dpr);
     renderer.setSize(W, H, false);
     camera.aspect = W / H;
@@ -613,6 +618,8 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   const rocketPos = new THREE.Vector3();
   const toMars = new THREE.Vector3();
   const tangent = new THREE.Vector3();
+  const qSmooth = new THREE.Quaternion();
+  let qSmoothSet = false;
   const orbitPos = new THREE.Vector3();
   const orbitTan = new THREE.Vector3();
   const v = new THREE.Vector3();
@@ -736,7 +743,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
     // in the opening frame the rocket stands at the reference angle, not along the curve
     // from Earth (which leaned it over to ~50°); it eases onto the path as you scroll
     if (L.heroDir) tangent.lerp(L.heroDir, launch * (1 - smoothstep(0.02, 0.16, p))).normalize();
-    const park = smoothstep(0.8, 0.9, p);
+    // no parking orbit: circling first took the rocket behind Mars, and the landing then
+    // started from the far side and cut through the planet
+    const park = 0;
     // Orbit angle: 0 is where the flight path ends. Once in orbit the rocket glides up to a
     // steady speed; scrolling back winds it home along the circle (never across the planet).
     if (park >= 0.999 && !reduced) {
@@ -759,8 +768,11 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
     toMars.copy(rocketPos).sub(L.marsPos);
     const minR = L.marsR * 1.15;
     if (toMars.lengthSq() < minR * minR) rocketPos.copy(L.marsPos).addScaledVector(toMars.normalize(), minR);
-    let rScale = L.rocketLen * lerp(1, 0.17, smoothstep(0.25, 0.82, p)) * lerp(1, 0.6, park);
-    rig.group.quaternion.copy(qFlight);
+    let rScale = L.rocketLen * lerp(1, 0.17, smoothstep(0.25, 0.82, p)) * lerp(0.18, 1, launch);
+    // steady heading: ease toward the path direction instead of snapping each frame
+    if (reduced || !qSmoothSet) { qSmooth.copy(qFlight); qSmoothSet = true; }
+    else qSmooth.slerp(qFlight, 1 - Math.exp(-dt * 6));
+    rig.group.quaternion.copy(qSmooth);
 
     /* ---- Landing on the chosen site: de-orbit, flip tail-first, braking burn, touchdown ---- */
     let landThrust = null;
@@ -784,6 +796,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
       rocketPos.copy(flight.from).multiplyScalar((1 - e) * (1 - e))
         .addScaledVector(hover, 2 * (1 - e) * e)
         .addScaledVector(landEnd, e * e);
+      // keep the descent outside the planet's surface the whole way down
+      toMars.copy(rocketPos).sub(L.marsPos);
+      if (toMars.length() < L.marsR * 1.03) rocketPos.copy(L.marsPos).addScaledVector(toMars.normalize(), L.marsR * 1.03);
       rScale = lerp(flight.s0, s1, smooth(clamp01(desc * 1.4)));
       // flip: nose away from the ground, engines down
       rig.group.quaternion.copy(flight.q0).slerp(alignTo(landN, Z_AXIS, qB), smooth(clamp01(T / 0.7)));
@@ -897,7 +912,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
       fade: fRocket * flyFade,
       // the rocket is lit by the sun it is flying under: Earth's key light early on, Mars's
       // sun (and its rust-coloured bounce light) on approach and during the landing
-      sunWorld: rocketSun.copy(SUN_EARTH).lerp(sunWorld, nearMars).normalize(),
+      sunWorld: rocketSun.copy(ROCKET_KEY).lerp(sunWorld, nearMars).normalize(),
       bounce: rocketBounce.copy(BOUNCE_EARTH).lerp(BOUNCE_MARS, nearMars),
       legs: flight ? smoothstep(1.15, 1.75, flight.t) : 0,
       camera,
@@ -916,7 +931,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
 
     /* ---- DOM overlays (labels + pins) ---- */
     if (dom) {
-      const labelsOn = smoothstep(0.55, 0.85, intro) * (1 - smoothstep(0.05, 0.14, p));
+      // the opening frame is clean like the reference: no Earth/Moon/Mars captions (they also
+      // collided with each other on wide screens)
+      const labelsOn = 0;
       project(w3.copy(earth.position).addScaledVector(right, L.earthR * 0.66).addScaledVector(up, L.earthR * 0.84), dom.labels?.earth, labelsOn);
       project(w3.copy(moon.position).addScaledVector(right, L.moonR * 1.1).addScaledVector(up, L.moonR * 0.6), dom.labels?.moon, labelsOn);
       project(w3.copy(mars.position).addScaledVector(right, -L.marsR * 1.05).addScaledVector(up, L.marsR * 1.3), dom.labels?.mars, labelsOn * (1 - arrive));

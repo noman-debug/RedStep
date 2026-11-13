@@ -4,6 +4,7 @@ import { BADGES } from '../content/site.js'
 import { DATA, FACT_SOURCES } from '../content/sources.js'
 import { WALK, SITES, backtest, dataSource, sitePanoramas } from '../data/index.js'
 import { BASE } from '../content/habitat.js'
+import { NASA_TOOLS } from '../content/nasaTools.js'
 import './page.css'
 
 const groups = [...new Set(DATA.map((d) => d.group))]
@@ -50,6 +51,13 @@ export default function Sources() {
           ))}
         </ul>
         <p className="src-method-note">Shrunk to 6,000 px wide for the web by <code>scripts/bake-panoramas.mjs</code>. Rover positions from JPL MMGIS waypoints. Places without a rover panorama get a Demo view from orbit, labelled as not rover photos.</p>
+      </section>
+
+      <section className="src-group">
+        <h2 className="micro">Explore further with NASA tools</h2>
+        <ul className="src-facts">
+          {Object.values(NASA_TOOLS).map((t) => <li key={t.url}><a href={t.url} target="_blank" rel="noreferrer">{t.name} ↗</a> {t.what}</li>)}
+        </ul>
       </section>
 
       <section className="src-group">
