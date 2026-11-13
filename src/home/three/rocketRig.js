@@ -54,18 +54,21 @@ function tag(g, part) {
 /** "REDSTEP" lettering, drawn once into a small texture (redrawn when the font arrives). */
 function letteringTexture() {
   const c = document.createElement('canvas');
-  c.width = 1024;
-  c.height = 128;
+  c.width = 2048;
+  c.height = 256;
   const tex = new THREE.CanvasTexture(c);
-  tex.anisotropy = 4;
+  tex.anisotropy = 8;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
   const draw = () => {
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#000';
-    ctx.font = '700 84px "Syne", "Helvetica Neue", Arial, sans-serif';
+    ctx.font = '700 168px "Syne", "Helvetica Neue", Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '14px';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '28px';
     ctx.fillText('REDSTEP', c.width / 2, c.height / 2 + 4);
     tex.needsUpdate = true;
   };
@@ -83,7 +86,9 @@ export function createRocketRig({ quality = 'high' } = {}) {
   group.add(body);
 
   /* ---- Vehicle ---- */
-  const SEG = low ? 28 : 56;
+  // Keep the rocket hull smooth on every device. This is a small mesh, so the extra
+  // radial detail has negligible cost compared with the full-screen planet shaders.
+  const SEG = 72;
   const parts = [
     lathe(coreProfile, 0.045, 1.0, 0.004, SEG, 0, 0),
     lathe(boosterProfile, 0.05, 0.6, 0.004, Math.round(SEG * 0.75), BOOST_X, 1),
