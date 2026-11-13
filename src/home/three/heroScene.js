@@ -150,7 +150,7 @@ function planetMaterial(define, { map, aux, rim, rimStrength = 0, bump = 0, expo
   });
 }
 
-function atmosphere(color, scale, intensity, power) {
+function atmosphere(color, scale, intensity, power, segments = 72) {
   const mat = new THREE.ShaderMaterial({
     vertexShader: ATMO_VERTEX,
     fragmentShader: ATMO_FRAGMENT,
@@ -166,7 +166,7 @@ function atmosphere(color, scale, intensity, power) {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
-  const mesh = new THREE.Mesh(new THREE.SphereGeometry(scale, 96, 48), mat);
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(scale, segments, Math.max(16, Math.round(segments / 2))), mat);
   return mesh;
 }
 
@@ -263,7 +263,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   sky.frustumCulled = false;
   scene.add(sky);
 
-  const STARS = 2600;
+  const STARS = low ? 1200 : 2200;
   const sp = new Float32Array(STARS * 3);
   const ss = new Float32Array(STARS);
   const st = new Float32Array(STARS);
@@ -301,22 +301,22 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   scene.add(stars);
 
   /* ---- Bodies ---- */
-  const sphere = low ? new THREE.SphereGeometry(1, 96, 48) : new THREE.SphereGeometry(1, 160, 80);
+  const sphere = low ? new THREE.SphereGeometry(1, 72, 36) : new THREE.SphereGeometry(1, 128, 64);
   const earthMat = planetMaterial('EARTH', {
     map: earthRT.texture,
     aux: earthAuxRT.texture,
     rim: '#a8d9fc',
     rimStrength: 0.9,
     exposure: 1.3,
-    size: [2048, 1024],
+    size: [B, B / 2],
   });
   const earth = new THREE.Mesh(sphere, earthMat);
-  const earthAtmo = atmosphere('#a8d9fc', 1.03, 1.25, 2.2);
+  const earthAtmo = atmosphere('#a8d9fc', 1.03, 1.25, 2.2, low ? 40 : 72);
   earth.add(earthAtmo);
   scene.add(earth);
 
   const moonMat = planetMaterial('MOON', { map: moonRT.texture, bump: 2.2, exposure: 1.18, ambient: 0.012, size: [1024, 512] });
-  const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), moonMat);
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(1, low ? 64 : 96, low ? 32 : 48), moonMat);
   scene.add(moon);
 
   const marsMat = planetMaterial('MARS', {
@@ -329,7 +329,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
     size: [2048, 1024],
   });
   const mars = new THREE.Mesh(sphere, marsMat);
-  const marsAtmo = atmosphere('#ff9a6b', 1.018, 0.45, 2.6);
+  const marsAtmo = atmosphere('#ff9a6b', 1.018, 0.45, 2.6, low ? 40 : 72);
   mars.add(marsAtmo);
   scene.add(mars);
 
@@ -563,7 +563,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   let dpr = 1;
   let pxBase = 1000;
   // Render resolution steps down when frames run slow (see frameWatch below).
-  const DPR_STEPS = [1.75, 1.25, 1, 0.75];
+  const DPR_STEPS = [1.25, 1, 0.85, 0.7];
   let dprStep = low ? 2 : 0;
   function resize(w, h) {
     W = Math.max(1, w);
