@@ -326,7 +326,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
     bump: 3.2,
     exposure: 1.28,
     ambient: 0.03,
-    size: [2048, 1024],
+    size: [B, B / 2],
   });
   const mars = new THREE.Mesh(sphere, marsMat);
   const marsAtmo = atmosphere('#ff9a6b', 1.018, 0.45, 2.6, low ? 40 : 72);
