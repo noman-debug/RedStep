@@ -63,11 +63,11 @@ export default function LiteSite({ site }) {
       if (trav) {
         const line = trav.line
         m.addSource('trav', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: line } } })
-        m.addLayer({ id: 'trav', type: 'line', source: 'trav', paint: { 'line-color': '#ffb25b', 'line-width': 2 } })
+        m.addLayer({ id: 'trav', type: 'line', source: 'trav', paint: { 'line-color': '#e3895a', 'line-width': 2 } })
       }
       m.addSource('pin', { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: meta.center } } })
-      m.addLayer({ id: 'pin-halo', type: 'circle', source: 'pin', paint: { 'circle-radius': 16, 'circle-color': '#ffb25b', 'circle-opacity': 0.15 } })
-      m.addLayer({ id: 'pin', type: 'circle', source: 'pin', paint: { 'circle-radius': 5, 'circle-color': '#ffb25b', 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5 } })
+      m.addLayer({ id: 'pin-halo', type: 'circle', source: 'pin', paint: { 'circle-radius': 16, 'circle-color': '#e3895a', 'circle-opacity': 0.15 } })
+      m.addLayer({ id: 'pin', type: 'circle', source: 'pin', paint: { 'circle-radius': 5, 'circle-color': '#e3895a', 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5 } })
       setReady(true)
     })
     const upd = () => {

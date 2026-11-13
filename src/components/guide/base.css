@@ -159,7 +159,7 @@
 
 .seg button[aria-checked='true'] {
   border-color: var(--rust);
-  background: rgba(236, 125, 69, 0.14);
+  background: rgba(208, 96, 47, 0.14);
   color: var(--ink);
 }
 
@@ -172,7 +172,7 @@
 .sec-label { font: 400 10px var(--mono); fill: rgba(127, 176, 255, 0.8); letter-spacing: 1px; }
 .sec-text { font: 600 12px var(--font); fill: #f5f7fb; }
 .sec-small { font: 400 9px var(--mono); fill: rgba(245, 247, 251, 0.6); }
-.sec-warn { font: 700 11px var(--mono); fill: #ffb25b; letter-spacing: 1px; }
+.sec-warn { font: 700 11px var(--mono); fill: #e3895a; letter-spacing: 1px; }
 
 @media (max-width: 820px) {
   .calc { grid-template-columns: 1fr; gap: var(--s-5); }

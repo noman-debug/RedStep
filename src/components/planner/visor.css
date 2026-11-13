@@ -126,7 +126,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: linear-gradient(0deg, #ff8a3d, var(--vz));
+  background: linear-gradient(0deg, #d0602f, var(--vz));
   transform-origin: bottom;
   transition: transform 300ms linear;
 }

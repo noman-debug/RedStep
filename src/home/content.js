@@ -51,7 +51,7 @@ export const DEFAULT_SITE_ID = 'jezero'
 export const getSite = (id) => LANDING_SITES.find((s) => s.id === id)
 
 export const HOME = {
-  kicker: 'NASA Space Apps Challenge 2026',
+  kicker: 'Student entry · NASA Space Apps Challenge 2026',
   titleLines: ['Plan the first', 'walk on '],
   titleAccent: 'Mars.',
   lead: 'Plan it with real NASA mission data, and get a straight answer: GO or NO-GO, and why.',
@@ -72,23 +72,23 @@ export const HOME = {
     layers: {
       eyebrow: 'Layered + integrated',
       title: 'Five missions. *One map.*',
-      body: 'MOLA height, HiRISE and CTX photos, THEMIS rock-or-dust infrared, TES dust and the Viking colour mosaic, plus Perseverance’s and Curiosity’s real paths: stacked and blended on one Mars map, each layer labelled with its mission, instrument and resolution.',
+      body: 'Height, photos, dust and rover tracks, stacked on one map.',
       chips: ['mola', 'hirise', 'ctx', 'themis', 'tes', 'mdim', 'mmgis'],
     },
     cruise: {
       eyebrow: 'The trip is the first hazard',
       title: 'Every number shows its *source.*',
-      body: 'Curiosity’s RAD measured the dose on the way and on the ground. Mission Control is minutes away, so the plan has to be right before the hatch opens.',
+      body: 'Radiation is real and Earth is minutes away. Plan before the hatch opens.',
     },
     arrive: {
       eyebrow: 'Plan a successful Marswalk',
       title: 'Walk out. Do science. *Walk back.*',
-      body: 'Slope limits, suit air with a safety reserve, a walk-back circle and science stops worth the risk. You get a GO, CAUTION or NO-GO answer with its reasons.',
+      body: 'Slope, suit air and sunlight in. GO, CAUTION or NO-GO out.',
     },
     choose: {
       eyebrow: 'New science along the way',
       title: 'Choose your *landing site.*',
-      body: 'Drag the globe or pick a site. Walk planning is ready at Jezero Crater and at Gale Crater’s boxwork; the other sites open on the map.',
+      body: 'Drag the globe or pick a site.',
     },
   },
   walkthrough: [

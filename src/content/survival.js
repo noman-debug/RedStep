@@ -141,6 +141,20 @@ export const STEPS = [
     quiz: { q: 'If you message Earth and wait for the reply, it takes at least…', options: ['A few seconds', 'About 6 minutes', 'A whole day'], answer: 1 },
   },
   {
+    id: 'storms',
+    title: 'Dust storms',
+    question: 'When are dust storms most likely?',
+    lead: 'Most big storms come in the same part of the Mars year. Pick a site and a month to see the record.',
+    widget: 'storms',
+    facts: [
+      { text: 'Orbiters cataloged 14,974 dust storms over 8 Mars years. Most began between Ls 140° and 250°, around southern spring and summer.', source: 'mdad' },
+      { text: 'Planet-wide storms began near Ls 185° in both 2001 and 2018.', source: 'dustOnset2018' },
+      { text: 'The 2018 storm ended solar-powered Opportunity. Curiosity, on a plutonium generator, kept working under a haze opacity above 8.', source: 'curiosity2018' },
+    ],
+    procedure: ['Check the season before planning a long walk.', 'Keep power and air reserves for days without sun.', 'Read the latest orbiter weather before every walk.'],
+    quiz: { q: 'Which part of the Mars year has had the most big dust storms?', options: ['Ls 0–90°, northern spring', 'Ls 140–250°, around southern spring and summer', 'They are spread evenly'], answer: 1 },
+  },
+  {
     id: 'emergency',
     title: 'Emergencies',
     question: 'What do I do if something breaks?',

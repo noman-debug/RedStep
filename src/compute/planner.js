@@ -73,10 +73,10 @@ export function createPlanner(g) {
   }
 
   /**
-   * Choose science stops greedily by value per unit of air, chaining outward from the habitat and
-   * walking home the same way. appetite (0..1] = share of the usable air budget we allow.
+   * Choose science stops by analysing every combination (see below), walking home the same way.
+   * rank picks the best option (0) or the next-best ones (1, 2, …). appetite (0..1] = share of the usable air budget we allow.
    */
-  function suggest({ habitat, base, stops, settings: s, startMs, site, facts, appetite = 0.85 }) {
+  function suggest({ habitat, base, stops, settings: s, startMs, site, facts, appetite = 0.85, rank = 0 }) {
     const drive = driveTo(base, habitat, s)
     const driveH = drive ? drive.m / 1000 / Math.max(0.5, s.roverSpeed || 6) : 0
     // Air is costed for the suit that breathes hardest (the one carrying most), as analyze does.
@@ -113,9 +113,11 @@ export function createPlanner(g) {
       return legs.get(k)
     }
 
-    // Try every set of candidate stops (at most 2^9 = 512), visiting each set in nearest-next
-    // order and walking home the same way. Keep the set with the most science value that fits
-    // the air budget and the daylight; on a tie, the one that uses less air.
+    // Analyse every set of candidate stops (at most 2^9 = 512). For each set find the visiting
+    // order that uses the least air (every order for up to 5 stops, nearest-next beyond that),
+    // then keep the sets that fit the air budget and the daylight. Rank them: most science
+    // first, then least air. The best few are checked with the full walk analysis and any
+    // that is not a clean GO drops behind the ones that are.
     const budget = (1 - s.reserve / 100) * appetite
     const cost = (order) => {
       let air = 0, h = 0
@@ -138,28 +140,47 @@ export function createPlanner(g) {
       }
       return order
     }
-    let chain = [nodes[0]], bestValue = 0, bestAir = Infinity
+    const bestOrder = (set) => {
+      if (set.length > 5) { const o = nearestOrder(set); return { order: o, c: cost(o) } }
+      let best = null
+      const walk = (order, left) => {
+        if (!left.length) { const c2 = cost(order); if (c2 && (!best || c2.air < best.c.air)) best = { order: order.slice(), c: c2 }; return }
+        for (let k = 0; k < left.length; k++) { order.push(left[k]); walk(order, [...left.slice(0, k), ...left.slice(k + 1)]); order.pop() }
+      }
+      walk([nodes[0]], set)
+      return best || { order: null, c: null }
+    }
+    const options = []
+    let checked = 0
     for (let mask = 1; mask < 1 << cand.length; mask++) {
       const set = cand.filter((_, k) => mask & (1 << k))
-      const value = set.reduce((v, p) => v + (p.value || 1), 0)
-      if (value < bestValue) continue
-      const order = nearestOrder(set)
-      const c2 = cost(order)
+      checked++
+      const { order, c: c2 } = bestOrder(set)
       if (!c2 || c2.air > budget || c2.h > maxHours) continue
-      if (value > bestValue || c2.air < bestAir) { chain = order; bestValue = value; bestAir = c2.air }
+      options.push({ order, air: c2.air, h: c2.h, value: set.reduce((v, p) => v + (p.value || 1), 0) })
     }
+    options.sort((x, y) => y.value - x.value || x.air - y.air)
+    const build = (o) => {
+      const cells = [o.order[0].cell]
+      for (let k = 1; k < o.order.length; k++) cells.push(...leg(o.order[k - 1], o.order[k]).cells.slice(1))
+      const line = cellsToLine(g, cells)
+      line[0] = habitat
+      const chosen = o.order.slice(1)
+      return { line, chosen, analysis: analyze(g, { line, stops: chosen, settings: s, startMs, site, habitat, facts, drive: driveInfo(drive), base }) }
+    }
+    const top = options.slice(0, 6).map((o) => ({ ...o, ...build(o) }))
+    const grade = { go: 0, caution: 1, nogo: 2 }
+    top.sort((x, y) => grade[x.analysis.status] - grade[y.analysis.status] || y.value - x.value || x.air - y.air)
 
-    if (chain.length === 1) return { line: null, chosen: [], waypoints: [habitat], maxHours }
-    const cells = [chain[0].cell]
-    for (let k = 1; k < chain.length; k++) cells.push(...leg(chain[k - 1], chain[k]).cells.slice(1))
-    const line = cellsToLine(g, cells)
-    line[0] = habitat
-    const chosen = chain.slice(1)
-    const analysis = analyze(g, { line, stops: chosen, settings: s, startMs, site, habitat, facts, drive: driveInfo(drive), base })
+    if (!top.length) return { line: null, chosen: [], waypoints: [habitat], maxHours, checked }
+    const pick = top[rank % top.length]
     return {
-      line, analysis, maxHours, driveLine: drive?.line || null,
-      chosen: chosen.map((p) => p.id),
-      waypoints: [habitat, ...chosen.map((p) => [p.lon, p.lat])],
+      line: pick.line, analysis: pick.analysis, maxHours, driveLine: drive?.line || null,
+      chosen: pick.chosen.map((p) => p.id),
+      waypoints: [habitat, ...pick.chosen.map((p) => [p.lon, p.lat])],
+      // how the choice was made, for the planner to show
+      checked, fits: options.length, option: (rank % top.length) + 1, of: top.length,
+      science: pick.value, scienceMax: cand.reduce((v, p) => v + (p.value || 1), 0),
     }
   }
 

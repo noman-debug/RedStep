@@ -4,6 +4,7 @@
 import { distance, elevAt, slopeAt, roughAt, inside } from './grid.js'
 import { marsTime, sunAt } from '../lib/mars24.js'
 import { earthMars } from '../lib/ephem.js'
+import { dustOutlook } from '../content/dustHistory.js'
 
 const STEP_M = 20
 const TOBLER_FLAT = Math.exp(-3.5 * 0.05)
@@ -247,8 +248,9 @@ export function analyze(g, { line, stops = [], settings: s, startMs, site, habit
   if (comms.sunAngle < 3) {
     reasons.push({ level: 'note', code: 'conjunction', title: 'No radio contact with Earth', detail: 'Mars is behind the Sun as seen from Earth (solar conjunction). Earth cannot help for about two weeks.' })
   }
-  if (dusty) {
-    reasons.push({ level: 'note', code: 'dust', title: 'Dust storm season', detail: `Mars season Ls ${mt.Ls.toFixed(0)}°. Large dust storms usually begin between Ls 180° and 360°. Check the weather before leaving.`, protocol: 'power' })
+  const dust = dustOutlook(mt.Ls)
+  if (dust.level !== 'low') {
+    reasons.push({ level: dust.level === 'high' ? 'caution' : 'note', code: 'dust', title: `Dust storm history: ${dust.level === 'high' ? 'High' : 'Moderate'}`, detail: `Mars season Ls ${mt.Ls.toFixed(0)}°. ${dust.why} ${dust.rate}. ${dust.disclaimer}`, protocol: 'power' })
   }
   const order = { nogo: 0, caution: 1, note: 2 }
   reasons.sort((a, b) => order[a.level] - order[b.level])
@@ -276,7 +278,7 @@ export function analyze(g, { line, stops = [], settings: s, startMs, site, habit
     turnBack: { lon: pts[turn].lon, lat: pts[turn].lat, d: pts[turn].d, atEnd: turn === n - 1, airThere: out.air[turn] },
     farthest, farthestAt: [pts[farIdx].lon, pts[farIdx].lat],
     sun: { start: startSun, end: endSun, min: minSun, track: sunTrack, darkAt, lowAt },
-    dose, comms, mars: { sol: mt.sol, Ls: mt.Ls, dusty, msd: mt.msd },
+    dose, comms, mars: { sol: mt.sol, Ls: mt.Ls, dusty, msd: mt.msd }, dust,
     bands, amberM, rockyM, profile, visited, unknownM,
   }
 }

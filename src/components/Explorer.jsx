@@ -10,7 +10,6 @@ import { marsTime, sunAt, fmtHours } from '../lib/mars24.js'
 import { earthMars } from '../lib/ephem.js'
 import { SITES, siteMeta, siteTraverse, placeNames, basemapTiles } from '../data/index.js'
 import { FAMOUS, famousByName } from '../content/places.js'
-import { MANUAL } from '../content/manual.js'
 import { SITE } from '../content/site.js'
 import { Sidebar, SbSection, SbRow, SbDisclosure } from './Sidebar.jsx'
 import { Badge, Source } from './Atoms.jsx'
@@ -137,10 +136,10 @@ export default function Explorer({ onReady, initial = 'jezero', visible = true, 
       m.addLayer({ id: 'night', type: 'raster', source: 'night', paint: { 'raster-fade-duration': 0, 'raster-opacity': 0.9 } })
 
       m.addSource('rovers', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
-      m.addLayer({ id: 'rovers', type: 'line', source: 'rovers', minzoom: 6, paint: { 'line-color': '#ffb25b', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 12, 2.4], 'line-opacity': 0.9 }, layout: { 'line-join': 'round', 'line-cap': 'round' } })
+      m.addLayer({ id: 'rovers', type: 'line', source: 'rovers', minzoom: 6, paint: { 'line-color': '#e3895a', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 12, 2.4], 'line-opacity': 0.9 }, layout: { 'line-join': 'round', 'line-cap': 'round' } })
       m.addSource('sites', { type: 'geojson', promoteId: 'id', data: { type: 'FeatureCollection', features: SITES.map((s) => ({ type: 'Feature', properties: { id: s.id, planner: s.planner }, geometry: { type: 'Point', coordinates: [s.lon, s.lat] } })) } })
-      m.addLayer({ id: 'sites-halo', type: 'circle', source: 'sites', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 9, 8, 16], 'circle-color': '#ffb25b', 'circle-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 0.18], 'circle-pitch-alignment': 'map' } })
-      m.addLayer({ id: 'sites', type: 'circle', source: 'sites', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 4, 8, 6], 'circle-color': ['case', ['get', 'planner'], '#ffb25b', '#f5f7fb'], 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5, 'circle-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 1], 'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 1] } })
+      m.addLayer({ id: 'sites-halo', type: 'circle', source: 'sites', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 9, 8, 16], 'circle-color': '#e3895a', 'circle-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 0.18], 'circle-pitch-alignment': 'map' } })
+      m.addLayer({ id: 'sites', type: 'circle', source: 'sites', paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 0, 4, 8, 6], 'circle-color': ['case', ['get', 'planner'], '#e3895a', '#f5f7fb'], 'circle-stroke-color': '#000', 'circle-stroke-width': 1.5, 'circle-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 1], 'circle-stroke-opacity': ['case', ['boolean', ['feature-state', 'rim'], false], 0, 1] } })
       m.addSource('pin', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } })
       m.addLayer({ id: 'pin', type: 'circle', source: 'pin', paint: { 'circle-radius': 7, 'circle-color': '#00e5ff', 'circle-stroke-color': '#000', 'circle-stroke-width': 2 } })
 
@@ -448,11 +447,6 @@ export default function Explorer({ onReady, initial = 'jezero', visible = true, 
             </SbSection>
             <SbSection title="Famous places">
               {famous.map((n) => <SbRow key={n[0]} icon="⌖" tone="ice" title={n[0]} sub={famousByName[n[0]]?.short || n[3]} onClick={() => selectName(n)} />)}
-            </SbSection>
-            <SbSection title="Help">
-              {MANUAL.explore.map((m) => (
-                <SbDisclosure key={m.title} title={m.title}>{m.body.map((b) => <p key={b}>{b}</p>)}</SbDisclosure>
-              ))}
             </SbSection>
           </>
         )}

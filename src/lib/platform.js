@@ -1,6 +1,5 @@
-// Which desktop the visitor is on, so the interface can follow its conventions: macOS gets
-// translucent "vibrancy" panels, rounder corners and ⌘ shortcuts; Windows gets Fluent-style
-// "Mica" panels, tighter corners, visible scrollbars and Ctrl shortcuts (see styles/platform.css).
+// Which desktop the visitor is on. Only the keyboard shortcut text follows it (⌘ on Mac,
+// Ctrl elsewhere); the look is identical on every OS (see styles/platform.css).
 export function detectPlatform() {
   if (typeof navigator === 'undefined') return 'other'
   // ?platform=mac or ?platform=windows shows the other look (for demos and testing)

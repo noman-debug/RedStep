@@ -129,6 +129,8 @@ function Planner({ site }) {
   const [focusStop, setFocusStop] = useState(null)
   const [following, setFollowing] = useState(false)
   const [suggestNote, setSuggestNote] = useState(null)
+  const [suggestWhy, setSuggestWhy] = useState(null) // how the planner chose the suggested walk
+  const rank = useRef(0)
   const hud = useRef(null)
   const minimap = useRef(null)
   const stopFollow = useRef(null)
@@ -192,6 +194,7 @@ function Planner({ site }) {
     if (data.type === 'suggest') {
       if (!data.line) { setSuggestNote('No stop fits the air and daylight with these settings. Try "Long", an earlier start, or a smaller reserve in Settings.'); return }
       setSuggestNote(null)
+      setSuggestWhy(data)
       setStopIds(data.chosen)
       setSnap(true)
       setWaypoints(data.waypoints)
@@ -241,7 +244,8 @@ function Planner({ site }) {
   useEffect(() => {
     if (!mapReady || animating.current) return
     mapRef.current?.setRoute(result?.line || null, waypoints)
-  }, [mapReady, result, waypoints])
+    mapRef.current?.setHazards(result?.profile || null, settings.greenSlope, settings.redSlope)
+  }, [mapReady, result, waypoints, settings.greenSlope, settings.redSlope])
 
   // ---- plan whenever inputs change ----
   const planStops = useMemo(() => stops.filter((s) => stopIds.includes(s.id)), [stops, stopIds])
@@ -310,12 +314,13 @@ function Planner({ site }) {
   }, [mapReady, layers])
 
   // ---- actions ----
-  const suggest = useCallback((which = appetite) => {
+  const suggest = useCallback((which = appetite, next = false) => {
     if (!grid) return
+    rank.current = next ? rank.current + 1 : 0 // 'another walk' steps to the next-best option
     setDrawing(false)
     const id = ++reqId.current
     setBusy(true)
-    worker.current.postMessage({ type: 'suggest', id, habitat: start, base, stops, settings, startMs, site, facts: FACT_VALUES, appetite: APPETITE.find((a) => a.id === which).value })
+    worker.current.postMessage({ type: 'suggest', id, habitat: start, base, stops, settings, startMs, site, facts: FACT_VALUES, appetite: APPETITE.find((a) => a.id === which).value, rank: rank.current })
   }, [grid, appetite, start, base, stops, settings, startMs, site])
 
   const tryRisky = useCallback(() => {
@@ -525,7 +530,7 @@ function Planner({ site }) {
 
       {/* action bar */}
       <div ref={actionbarRef} className="actionbar glass" role="toolbar" aria-label="Walk tools">
-        <button type="button" className="btn btn-primary ab-main" onClick={() => suggest()} disabled={!grid || busy} aria-busy={!grid || busy}>
+        <button type="button" className="btn btn-primary ab-main" onClick={() => suggest(appetite, !!a)} disabled={!grid || busy} aria-busy={!grid || busy}>
           {(!grid || busy) && <i className="spinner spinner-dark" aria-hidden="true" />}
           {!grid ? 'Loading terrain…' : busy ? 'Finding a safe path…' : a ? 'Suggest another walk' : 'Suggest a safe walk'}
         </button>
@@ -559,6 +564,11 @@ function Planner({ site }) {
       </div>
       {drawing && hint && <p className="draw-hint" role="status">Tap the map to add stops on your walk</p>}
       {suggestNote && <p className="draw-hint draw-warn">{suggestNote}</p>}
+      {!suggestNote && suggestWhy?.checked > 0 && a && !drawing && (
+        <p className="draw-hint suggest-why" role="status">
+          <b>Option {suggestWhy.option} of {suggestWhy.of}</b> · {suggestWhy.checked} stop combinations analysed, {suggestWhy.fits} fit your air and daylight · science {suggestWhy.science}/{suggestWhy.scienceMax}
+        </p>
+      )}
 
       {!narrow ? (
         <>

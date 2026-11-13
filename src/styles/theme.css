@@ -54,10 +54,10 @@
   --ink-4: #6e6e73;
   --rule: rgba(255, 255, 255, 0.14);
   --rule-soft: rgba(255, 255, 255, 0.08);
-  --link: #ff9f5a;
+  --link: #e3895a;
   --link-hover: #ffb27d;
-  --rust: #ff6a2c;
-  --ember: #ff9f5a;
+  --rust: #d0602f;
+  --ember: #e3895a;
   /* live readouts: white, not cyan */
   --hud: #f5f5f7;
 
@@ -169,28 +169,28 @@
   }
 }
 
-:root:not([data-platform='windows']) :is(.btn-primary, .mw-home .btn--primary) {
+:root :is(.btn-primary, .mw-home .btn--primary) {
   background: var(--rust);
   border-color: var(--rust);
   color: #1a0a03;
   font-weight: 600;
-  box-shadow: 0 6px 24px rgba(255, 106, 44, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  box-shadow: 0 6px 24px rgba(208, 96, 47, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 
-:root:not([data-platform='windows']) :is(.btn-primary, .mw-home .btn--primary):hover {
-  background: #ff7d45;
-  border-color: #ff7d45;
-  box-shadow: 0 8px 30px rgba(255, 106, 44, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+:root :is(.btn-primary, .mw-home .btn--primary):hover {
+  background: #d0602f;
+  border-color: #d0602f;
+  box-shadow: 0 8px 30px rgba(208, 96, 47, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
-:root:not([data-platform='windows']) .mw-home .btn--ghost {
+:root .mw-home .btn--ghost {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: var(--ink);
   box-shadow: none;
 }
 
-:root:not([data-platform='windows']) .mw-home .btn--ghost:hover {
+:root .mw-home .btn--ghost:hover {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.3);
   color: var(--ink);
@@ -214,7 +214,7 @@
 }
 
 /* panels: rounded surfaces */
-:root:not([data-platform='windows']) :is(.sb, .g-rail, .side, .actionbar, .profile-dock) {
+:root :is(.sb, .g-rail, .side, .actionbar, .profile-dock) {
   border-radius: var(--lg-radius);
 }
 
@@ -240,7 +240,7 @@
   height: 24px;
 }
 
-:root:not([data-platform='windows']) .nav .nav-links {
+:root .nav .nav-links {
   background: none;
   border: 0;
   box-shadow: none;
@@ -511,5 +511,129 @@
 }
 
 :root input[type='range']:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px rgba(255, 106, 44, 0.45), 0 2px 8px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 4px rgba(208, 96, 47, 0.45), 0 2px 8px rgba(0, 0, 0, 0.45);
 }
+
+/* ---- 2026-11 top bar: one floating island (brand · pages · emergency), same on every page ---- */
+@media (min-width: 941px) {
+  :root .nav,
+  :root .nav.nav-overlay {
+    top: 6px;
+    left: 50%;
+    right: auto;
+    width: min(960px, calc(100% - 24px));
+    height: 46px;
+    transform: translateX(-50%);
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    padding: 0 6px 0 16px;
+    border: 0.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 980px;
+    background: rgba(18, 16, 15, 0.72);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+    backdrop-filter: saturate(160%) blur(18px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  :root .nav .nav-links {
+    justify-self: center;
+    gap: 2px;
+  }
+
+  :root .nav-links a {
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 980px;
+    font: 500 14px / 1 var(--font);
+    letter-spacing: 0;
+    color: rgba(245, 245, 247, 0.7);
+    transition: color 180ms var(--ease), background-color 180ms var(--ease);
+  }
+
+  :root .nav-links a::after {
+    content: none;
+  }
+
+  :root .nav-links a.on {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+
+  :root .nav-sos {
+    height: 34px;
+    padding: 0 16px;
+    background: var(--rust);
+    color: #fff;
+    font: 600 13.5px / 1 var(--font);
+    letter-spacing: 0;
+  }
+
+  :root .nav-sos:hover {
+    background: var(--ember);
+  }
+
+  :root .nav-sos-dot {
+    background: #fff;
+    animation: none;
+    box-shadow: none;
+  }
+}
+
+/* ---- 2026-11 type: open, calm, easy to read (was tightly tracked and cramped) ---- */
+:root body {
+  line-height: 1.6;
+  letter-spacing: 0;
+  word-spacing: 0.02em;
+}
+
+:root :is(p, li, dd, dt, label, summary, button, a, input, select, small, span) {
+  letter-spacing: 0;
+}
+
+:root :is(h1, h2, h3, .h2, .hero2__title) {
+  letter-spacing: -0.012em;
+  line-height: 1.12;
+}
+
+:root :is(p, li) {
+  line-height: 1.6;
+}
+
+:root .micro {
+  letter-spacing: 0.04em;
+}
+
+/* ---- 2026-11 less to read at once: long explanations sit behind an expand button ---- */
+:root :is(.g-more, .sp-score-more) > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  font: 600 15px / 1.2 var(--font);
+  color: var(--ink);
+  cursor: pointer;
+  list-style: none;
+}
+:root :is(.g-more, .sp-score-more) > summary::-webkit-details-marker { display: none; }
+:root .g-more > summary i {
+  width: 9px;
+  height: 9px;
+  border: solid var(--ink-2);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 200ms ease;
+}
+:root .g-more[open] > summary i { transform: rotate(-135deg) translate(-2px, -2px); }
+:root .g-more { margin: 20px 0; }
+:root .g-more > .g-two { margin-top: 16px; }
+:root .sp-score-more > summary { min-height: 40px; padding: 0 12px; font-size: 13px; background: none; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; justify-content: flex-start; }
+
+/* tighter page rhythm: no tall empty bands between sections */
+:root .g-widget { margin: 28px 0 20px; }
+:root .g-quiz { margin-top: 24px; }
+:root .g-head { margin-bottom: 0; }
+:root .g-lead { max-width: 56ch; }

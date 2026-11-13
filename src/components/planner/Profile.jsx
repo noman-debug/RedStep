@@ -47,8 +47,8 @@ export default function Profile({ analysis, stops = [], onHover, limits = { gree
       <svg ref={svg} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" onPointerMove={move} onPointerLeave={leave} role="img" aria-hidden="true">
         <defs>
           <linearGradient id="pf-fill" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0" stopColor="#ec7d45" stopOpacity=".45" />
-            <stop offset="1" stopColor="#ec7d45" stopOpacity="0" />
+            <stop offset="0" stopColor="#d0602f" stopOpacity=".45" />
+            <stop offset="1" stopColor="#d0602f" stopOpacity="0" />
           </linearGradient>
         </defs>
         {analysis.bands.map((b, i) => (
@@ -64,7 +64,7 @@ export default function Profile({ analysis, stops = [], onHover, limits = { gree
           <text key={z} x={PAD.l - 8} y={g.y(z) + 3} className="pf-tick" textAnchor="end">{Math.round(z)} m</text>
         ))}
         <path key={`a${g.dMax}`} d={g.area} fill="url(#pf-fill)" className="pf-area" />
-        <path key={g.top.length + g.dMax} d={`M${g.top}`} fill="none" stroke="#ffb25b" strokeWidth="1.6" vectorEffect="non-scaling-stroke" className="pf-line" pathLength="1" />
+        <path key={g.top.length + g.dMax} d={`M${g.top}`} fill="none" stroke="#e3895a" strokeWidth="1.6" vectorEffect="non-scaling-stroke" className="pf-line" pathLength="1" />
         {!analysis.turnBack.atEnd && (
           <g>
             <line x1={g.x(analysis.turnBack.d)} x2={g.x(analysis.turnBack.d)} y1={PAD.t - 4} y2={H - PAD.b} stroke="#ff8d7a" strokeDasharray="3 3" vectorEffect="non-scaling-stroke" />

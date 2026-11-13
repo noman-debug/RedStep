@@ -366,21 +366,42 @@ uniform float uAmbient;
 uniform float uExposure;
 uniform float uCloudShift;
 uniform vec3 uCityColor;
+uniform sampler2D uNight;
+uniform float uUseNight;
 uniform float uFade;
 varying vec2 vUv;
 varying vec3 vPos;
 
+// Exact equirectangular UV per pixel (matches THREE.SphereGeometry), so the poles don't
+// pinch into the triangle fan. Filtering uses whichever of two seam-shifted UVs has the
+// smaller screen derivative, so there is no seam line at the date line either.
+vec2 gUv;
+vec2 gDx;
+vec2 gDy;
+void sphereUv(vec3 n){
+  gUv = vec2(fract(atan(n.z, -n.x) / 6.2831853), 1.0 - acos(clamp(n.y, -1.0, 1.0)) / 3.14159265);
+  vec2 a = gUv;
+  vec2 b = vec2(fract(gUv.x + 0.5), gUv.y);
+  vec2 ax = dFdx(a), ay = dFdy(a), bx = dFdx(b), by = dFdy(b);
+  bool useB = abs(bx.x) + abs(by.x) < abs(ax.x) + abs(ay.x);
+  gDx = useB ? bx : ax;
+  gDy = useB ? by : ay;
+}
+vec4 tex(sampler2D t, vec2 uv){ return textureGrad(t, uv, gDx, gDy); }
+
 void main(){
   vec3 N = normalize(vPos);
-  vec4 base = texture2D(uMap, vUv);
-  vec3 albedo = mix(base.rgb, texture2D(uOverride, vUv).rgb, uUseOverride);
+  sphereUv(N);
+  vec2 uv = gUv;
+  vec4 base = tex(uMap, uv);
+  vec3 albedo = mix(base.rgb, tex(uOverride, uv).rgb, uUseOverride);
 
-  float hE = texture2D(uMap, vUv + vec2(uTexel.x, 0.0)).a - texture2D(uMap, vUv - vec2(uTexel.x, 0.0)).a;
-  float hN = texture2D(uMap, vUv + vec2(0.0, uTexel.y)).a - texture2D(uMap, vUv - vec2(0.0, uTexel.y)).a;
-  float phi = vUv.x * 6.2831853;
+  float hE = tex(uMap, uv + vec2(uTexel.x, 0.0)).a - tex(uMap, uv - vec2(uTexel.x, 0.0)).a;
+  float hN = tex(uMap, uv + vec2(0.0, uTexel.y)).a - tex(uMap, uv - vec2(0.0, uTexel.y)).a;
+  float phi = uv.x * 6.2831853;
   vec3 Te = normalize(vec3(sin(phi), 0.0, cos(phi)));
   vec3 Tn = normalize(cross(N, Te));
-  float cl = max(cos((vUv.y - 0.5) * 3.14159265), 0.2);
+  float cl = max(cos((uv.y - 0.5) * 3.14159265), 0.35); // weaker bump near the poles
   vec3 Nb = normalize(N - uBump * (1.0 - uUseOverride) * (hE / cl * Te + hN * Tn));
 
   float ndlG = dot(N, uSunObj);
@@ -399,16 +420,24 @@ void main(){
   col += vec3(0.9, 0.45, 0.25) * term * albedo;
   col += uRimColor * fres * smoothstep(-0.2, 0.5, ndlG) * uRimStrength;
 #elif defined(EARTH)
-  vec4 aux = texture2D(uAux, vUv);
-  float clouds = texture2D(uAux, vUv + vec2(uCloudShift, 0.0)).g;
-  float ocean = base.a;
-  vec3 col = albedo * lit * uExposure;
+  vec4 aux = tex(uAux, uv);
+  float clouds = tex(uAux, uv + vec2(uCloudShift, 0.0)).g;
+  // With the NASA day map, find the oceans in that map (blue-dominant, dark) so the sun
+  // glint follows the real coastlines instead of the drawn fallback's continents.
+  float realOcean = smoothstep(0.0, 0.05, albedo.b - max(albedo.r, albedo.g)) * (1.0 - smoothstep(0.35, 0.6, albedo.b));
+  float ocean = mix(base.a, realOcean, uUseOverride);
+  // soft daylight wrap and a little earthshine-free sky fill: no hard black terminator
+  float wrapLit = clamp((ndl + 0.08) / 1.08, 0.0, 1.0) * smoothstep(-0.18, 0.1, ndlG);
+  vec3 col = albedo * mix(lit, wrapLit, 0.5) * uExposure;
   vec3 H = normalize(uSunObj + V);
   col += vec3(1.0, 0.92, 0.8) * pow(max(dot(N, H), 0.0), 70.0) * ocean * 0.55 * step(0.0, ndlG) * (1.0 - clouds);
-  col = mix(col, vec3(0.97, 0.98, 1.0) * (lit * 1.08 + 0.004), clouds * 0.92);
+  // thinner drawn clouds so the real NASA day map shows through; night-side clouds stay dark
+  col = mix(col, vec3(0.97, 0.98, 1.0) * (lit * 1.08 + 0.004), clouds * 0.6);
   float night = 1.0 - smoothstep(-0.14, 0.06, ndlG);
-  col += uCityColor * aux.r * night * (1.0 - clouds * 0.85) * 1.6;
-  float sunRim = mix(0.35, 1.0, smoothstep(-0.3, 0.55, ndlG));
+  vec3 nightTex = tex(uNight, uv).rgb;
+  float city = mix(aux.r, smoothstep(0.03, 0.45, dot(nightTex, vec3(0.3, 0.5, 0.2))), uUseNight);
+  col += uCityColor * city * night * (1.0 - clouds * 0.5) * 3.2;
+  float sunRim = mix(0.1, 1.0, smoothstep(-0.3, 0.55, ndlG)); // no grey film over the night side
   col = mix(col, uRimColor * (0.35 + lit * 0.65), clamp(fres * sunRim * 0.85, 0.0, 1.0));
   col += uRimColor * pow(1.0 - NdV, 6.0) * sunRim * uRimStrength;
   col += albedo * uAmbient;
@@ -508,7 +537,7 @@ void main(){
 // stage cast soft shadows on each other (rays traced against their cylinders in object space),
 // ambient occlusion where they meet, Fresnel reflections of the dark sky and blue earthshine,
 // and the flame's warm light on the lower body.
-// aPart: 0 core stage, 1 booster, 2 engine bell, 3 strut.
+// aPart: 0 core stage, 1 booster, 2 engine bell, 3 strut, 4 landing leg (no self-shadow).
 export const ROCKET_VERTEX = /* glsl */ `
 attribute float aPart;
 varying vec3 vN;
@@ -537,6 +566,7 @@ uniform sampler2D uText;
 uniform float uCoreR;
 uniform float uBoostX;
 uniform float uBoostR;
+uniform vec3 uBounce; // light bounced off the nearest planet: blue near Earth, rust near Mars
 varying vec3 vN;
 varying vec3 vV;
 varying vec3 vObj;
@@ -639,7 +669,7 @@ void main(){
   vec3 sky = mix(vec3(0.012, 0.016, 0.026), vec3(0.10, 0.17, 0.30), smoothstep(0.2, -0.8, R.y) * smoothstep(0.4, -0.6, R.x));
   float fres = pow(1.0 - max(dot(n, V), 0.0), 5.0);
   vec3 envSpec = sky * mix(0.04 + 0.96 * fres, 1.0, metal) * (1.0 - rough * 0.6);
-  vec3 bounce = vec3(0.07, 0.10, 0.16) * max(-n.y * 0.5 + 0.5, 0.0) * max(0.0, 0.6 - 0.4 * n.x);
+  vec3 bounce = uBounce * max(-n.y * 0.5 + 0.5, 0.0) * max(0.0, 0.6 - 0.4 * n.x);
 
   vec3 diffuse = albedo * (1.0 - metal);
   vec3 col = diffuse * (lit * vec3(1.0, 0.97, 0.92) * 1.25 + bounce * 1.6 + 0.035) * ao
@@ -760,12 +790,15 @@ void main(){
   float spread = r0 * (1.2 + pow(age, 0.8) * 9.0) * sqrt(aSeed.z);
   float start = 0.22; // smoke starts where the flame thins out
   vec3 pos = origin + vec3(dir.x * spread, -(start + age) * len * 0.75, dir.y * spread);
-  pos.xz += vec2(sin(uTime * 0.7 + aSeed.w * 40.0), cos(uTime * 0.6 + aSeed.x * 40.0)) * 0.03 * age;
+  // billowing: each puff curls outward and rolls as it slows down
+  float t = uTime * 0.5 + aSeed.w * 40.0;
+  pos.xz += vec2(sin(t + age * 5.0), cos(t * 0.9 + age * 4.0)) * 0.045 * age * age;
+  pos.y += sin(t * 1.3 + aSeed.x * 20.0) * 0.02 * age;
   vec4 mv = modelViewMatrix * vec4(pos, 1.0);
   vAge = age;
   vSeed = aSeed;
   vA = smoothstep(0.0, 0.12, age) * (1.0 - smoothstep(0.55, 1.0, age)) * uThrust;
-  float size = (0.06 + age * 0.22) * (0.7 + 0.6 * aSeed.x);
+  float size = (0.05 + age * 0.3) * (0.6 + 0.8 * aSeed.x);
   gl_PointSize = max(2.0, size * uPx / -mv.z);
   gl_Position = projectionMatrix * mv;
 }
@@ -789,13 +822,18 @@ void main(){
   // a lumpy cloud, not a dot: soft falloff broken up by noise that turns slowly
   float ang = vSeed.w * 6.283 + uTime * 0.2;
   vec2 r = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * uv * 3.0 + vSeed.xy * 10.0;
-  float n = noise(r) * 0.6 + noise(r * 2.1) * 0.4;
-  float a = smoothstep(1.0, 0.15, d + (n - 0.5) * 0.7);
-  // warm and lit by the flame near the engines, grey-blue in shadow further down
-  vec3 warm = vec3(0.95, 0.62, 0.36);
-  vec3 grey = vec3(0.42, 0.42, 0.46);
-  vec3 c = mix(warm, grey, smoothstep(0.0, 0.45, vAge)) * (0.75 + 0.35 * n);
-  gl_FragColor = vec4(c, a * vA * 0.32);
+  // four octaves: big lumps with fine wisps at their edges
+  float n = noise(r) * 0.5 + noise(r * 2.03) * 0.25 + noise(r * 4.1) * 0.15 + noise(r * 8.3) * 0.1;
+  float a = smoothstep(1.0, 0.1, d + (n - 0.5) * 0.9);
+  a *= smoothstep(0.15, 0.55, n + 0.25 * (1.0 - d)); // ragged, broken-up edges
+  // fake volume: puffs are lit from the flame above and the sun upper-right, darker underneath
+  float shade = 0.62 + 0.5 * clamp(-uv.y * 1.4 + uv.x * 0.6 + 0.5, 0.0, 1.0);
+  vec3 hot = vec3(1.0, 0.7, 0.42);
+  vec3 warm = vec3(0.86, 0.72, 0.6);
+  vec3 grey = vec3(0.56, 0.56, 0.6);
+  vec3 c = mix(hot, warm, smoothstep(0.0, 0.18, vAge));
+  c = mix(c, grey, smoothstep(0.15, 0.6, vAge)) * shade * (0.8 + 0.3 * n);
+  gl_FragColor = vec4(c, a * vA * 0.38);
 }
 `;
 

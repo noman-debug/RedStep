@@ -105,7 +105,7 @@ export function ShelterCalc({ b, set }) {
           <rect y="46" width="420" height="174" fill="url(#soil)" />
           {kind === 'tube' ? (
             <>
-              <ellipse cx="220" cy="150" rx="170" ry="44" fill="#120804" stroke="#ffb25b" strokeDasharray="5 5" />
+              <ellipse cx="220" cy="150" rx="170" ry="44" fill="#120804" stroke="#e3895a" strokeDasharray="5 5" />
               <rect x="140" y="140" width="160" height="30" rx="6" fill="#0b1830" stroke="#7fb0ff" />
               <text x="160" y="160" className="sec-text">habitat</text>
               <text x="150" y="98" className="sec-warn">hypothetical lava tube</text>
@@ -113,7 +113,7 @@ export function ShelterCalc({ b, set }) {
           ) : (
             <>
               <rect x="110" y="46" width="210" height={y - 46} fill="#8c4a2a" opacity=".55" />
-              <line x1="110" x2="320" y1={y} y2={y} stroke="#ffb25b" strokeDasharray="4 4" />
+              <line x1="110" x2="320" y1={y} y2={y} stroke="#e3895a" strokeDasharray="4 4" />
               <text x="328" y={46 + (y - 46) / 2 + 4} className="sec-text">{depth} m soil</text>
               <rect x="110" y={y} width="210" height="38" rx="6" fill="#0b1830" stroke="#7fb0ff" />
               <rect x="82" y={y} width="28" height="38" fill="#0b1830" stroke="#7fb0ff" opacity=".7" />

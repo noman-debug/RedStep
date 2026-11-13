@@ -8,7 +8,7 @@ import './minimap.css'
 
 const R = 3396190
 const D = Math.PI / 180
-const COL = { you: '#ffffff', easy: '#ffb25b', careful: '#ffd37a', steep: '#ff8d7a', home: '#f5f5f7', stop: '#a1a1a6', visited: '#7fe0a8', grid: 'rgba(255, 255, 255, 0.05)', text: 'rgba(245, 245, 247, 0.78)' }
+const COL = { you: '#ffffff', easy: '#e3895a', careful: '#ffd37a', steep: '#ff8d7a', home: '#f5f5f7', stop: '#a1a1a6', visited: '#7fe0a8', grid: 'rgba(255, 255, 255, 0.05)', text: 'rgba(245, 245, 247, 0.78)' }
 const nice = (m) => [50, 100, 200, 250, 500, 1000, 2000, 5000].find((s) => s >= m) || 5000
 
 // ---- shapes, shared by the canvas and the legend ----

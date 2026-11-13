@@ -106,6 +106,8 @@ export default function Guide() {
         </section>
 
         {(s.facts.length > 0 || s.procedure.length > 0) && (
+          <details className="g-more">
+            <summary><span>Read the facts and the steps</span><i aria-hidden="true" /></summary>
           <div className="g-two">
             {s.facts.length > 0 && (
               <section className="g-facts">
@@ -125,6 +127,7 @@ export default function Guide() {
               </section>
             )}
           </div>
+          </details>
         )}
 
         {s.quiz && (

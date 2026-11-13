@@ -132,7 +132,7 @@ export default function Brief() {
             <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
               {a.bands.map((bd, i) => <rect key={i} x={x(bd.from)} width={Math.max(1, x(bd.to) - x(bd.from))} y="0" height={H} fill={bd.level === 'red' ? '#ff8d7a' : '#ffd37a'} opacity={bd.level === 'red' ? 0.3 : 0.14} />)}
               <path d={`${path}L${W},${H}L0,${H}Z`} fill="rgba(236,125,69,.25)" />
-              <path d={path} fill="none" stroke="#ffb25b" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+              <path d={path} fill="none" stroke="#e3895a" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
               {a.visited.map((v) => <line key={v.id} x1={x(v.d)} x2={x(v.d)} y1="0" y2={H} stroke="#7fe0a8" strokeOpacity=".7" vectorEffect="non-scaling-stroke" />)}
             </svg>
             <p className="micro br-axis"><span>habitat · {Math.round(p[0][1])} m</span><span>{(a.distance / 1000).toFixed(2)} km · {Math.round(p[p.length - 1][1])} m</span></p>

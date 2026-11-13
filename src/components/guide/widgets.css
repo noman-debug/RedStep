@@ -150,7 +150,7 @@
 
 .we-steps button.done {
   color: var(--ink-2);
-  border-color: rgba(255, 178, 91, 0.3);
+  border-color: rgba(227, 137, 90, 0.3);
 }
 
 .we-steps button.on {
@@ -580,7 +580,7 @@
 
 .wl-site[aria-checked='true'] {
   border-color: var(--rust);
-  background: rgba(255, 106, 44, 0.12);
+  background: rgba(208, 96, 47, 0.12);
 }
 
 .wl-detail {

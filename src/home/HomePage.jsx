@@ -26,7 +26,6 @@ export default function HomePage() {
   const rootRef = useRef(null);
   const trackRef = useRef(null);
   const heroRef = useRef(null);
-  const walkRef = useRef(null);
   const tele = useRef({});
   // mapOn: the Mars map is loaded (from the cruise on, so it is ready on arrival)
   // atMars: the rocket has arrived and the map is showing; mapReady: its first frame is drawn
@@ -42,6 +41,9 @@ export default function HomePage() {
 
     // Every visit opens with the launch: the page holds still at the top until the rocket is
     // away, then the headline and the ways in appear. (Reduced motion skips straight to the end.)
+    // (and stop the browser restoring an old scroll position after we reset it)
+    const restore = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
     document.documentElement.classList.add('intro-lock');
     engine.playIntro();
@@ -75,7 +77,12 @@ export default function HomePage() {
       if (choose !== lastChoose) {
         root.dataset.choose = choose ? 'true' : 'false';
         lastChoose = choose;
-        setAtMars(choose);
+        // arriving: land on the default site first, then hand over to the map
+        if (choose) heroRef.current?.land(DEFAULT_SITE_ID, () => setAtMars(true));
+        else {
+          heroRef.current?.cancelLanding();
+          setAtMars(false);
+        }
       }
       const introDone = s.intro >= 1;
       if (introDone !== lastIntroDone) {
@@ -101,6 +108,7 @@ export default function HomePage() {
       unsub();
       engine.destroy();
       document.documentElement.classList.remove('intro-lock');
+      history.scrollRestoration = restore;
     };
   }, [engine]);
 
@@ -129,10 +137,8 @@ export default function HomePage() {
     return () => clearInterval(id);
   }, []);
 
-  // Walkthrough: the section's scroll position picks the step (0 .. steps - 1) and drives a slow zoom.
+  // Once the pinned story scrolls away, the nav turns solid.
   useEffect(() => {
-    const el = walkRef.current;
-    if (!el) return undefined;
     let raf = 0;
     const read = () => {
       raf = 0;
@@ -140,12 +146,6 @@ export default function HomePage() {
       // and the sections below don't slide under a see-through bar.
       const past = trackRef.current ? trackRef.current.getBoundingClientRect().bottom < window.innerHeight - 1 : false;
       if (rootRef.current) rootRef.current.dataset.past = past ? 'true' : 'false';
-      const r = el.querySelector('.walk__track').getBoundingClientRect();
-      const span = r.height - window.innerHeight;
-      const p = span > 0 ? Math.min(1, Math.max(0, -r.top / span)) : 0;
-      el.style.setProperty('--wp', p.toFixed(4));
-      const n = HOME.walkthrough.length;
-      el.dataset.step = String(Math.min(n - 1, Math.floor(p * n)));
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(read); };
     read();
@@ -313,32 +313,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="walk" ref={walkRef} aria-labelledby="walk-title">
-        <h2 id="walk-title" className="walk__title">How a walk gets <em>planned.</em></h2>
-        <div className="walk__track">
-          <div className="walk__sticky">
-            <ol className="walk__steps">
-              {HOME.walkthrough.map((w, i) => (
-                <li key={w.title} className="walk__step" style={{ '--i': i }}>
-                  <h3>{w.title}</h3>
-                  <p>{w.body}</p>
-                  <Link to={w.link} className="walk__link">
-                    {w.cta} <span aria-hidden="true">→</span>
-                  </Link>
-                  <img className="walk__shot-inline" src={w.img} alt={w.alt} loading="lazy" width="1600" height="900" />
-                </li>
-              ))}
-            </ol>
-            <div className="walk__screen" aria-hidden="true">
-              {HOME.walkthrough.map((w, i) => (
-                <img key={w.img} className="walk__shot" style={{ '--i': i }} src={w.img} alt="" loading="lazy" width="1600" height="900" />
-              ))}
-              <span className="walk__tap" />
-              <img className="walk__verdict" src="/home/verdict.webp" alt="" loading="lazy" width="800" height="680" />
-            </div>
-          </div>
-        </div>
-      </section>
 
 
       <footer className="home-end">

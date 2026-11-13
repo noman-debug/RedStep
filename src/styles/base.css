@@ -16,7 +16,10 @@ body {
   font: 400 var(--t-body) / 1.6 var(--font);
   font-feature-settings: 'tnum' 1, 'lnum' 1;
   -webkit-font-smoothing: antialiased;
+  /* clip, not hidden: hidden turns body into a scroll container whenever html's overflow is
+     set (the intro lock), and sticky elements then stop sticking */
   overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1,

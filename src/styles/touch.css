@@ -56,6 +56,13 @@
   :root .maplibregl-ctrl-attrib.maplibregl-compact-show {
     padding-right: 48px;
   }
+  /* bottom-left maps put the 44 px button on the left: keep the credits clear of it */
+  :root .maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib.maplibregl-compact-show {
+    padding-left: 50px;
+    padding-right: 12px;
+    display: flex;
+    align-items: center;
+  }
 
   :root .maplibregl-ctrl-attrib-button {
     width: 44px;

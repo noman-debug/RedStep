@@ -9,6 +9,7 @@ import { yearOfSun } from '../../lib/insolation.js'
 import { SITES } from '../../content/sites.js'
 import { prefersReducedMotion, useStored } from '../../lib/hooks.js'
 import { FarmCalc, OxygenCalc, ShelterCalc, useBase } from './Base.jsx'
+import StormRisk from './StormRisk.jsx'
 import './widgets.css'
 
 /* 1. How thin is the air? */
@@ -377,6 +378,7 @@ export const WIDGETS = {
   land: FarmLand,
   dose: ShelterStep,
   time: MarsTimeWidget,
+  storms: StormRisk,
   drill: Drill,
   checklist: Checklist,
 }

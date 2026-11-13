@@ -20,7 +20,7 @@ export function prefersReducedMotion() {
   return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-export function createMotionEngine({ smoothing = 5.5, introDuration = 6.5 } = {}) {
+export function createMotionEngine({ smoothing = 5.5, introDuration = 2.2 } = {}) {
   const subs = new Set();
   const state = {
     time: 0,
@@ -66,7 +66,8 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 6.5 } = {}
   const tick = (now) => {
     raf = 0;
     const t = now / 1000;
-    const dt = last ? Math.min(0.1, t - last) : 1 / 60;
+    const raw = last ? t - last : 1 / 60;
+    const dt = Math.min(0.1, raw);
     last = t;
     state.dt = dt;
     state.time += dt;
@@ -93,7 +94,8 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 6.5 } = {}
       state.pointer.sy += (state.pointer.y - state.pointer.sy) * kp;
 
       if (state.introPlaying) {
-        state.intro = Math.min(1, state.intro + dt / introDuration);
+        // real time (up to 0.3 s per frame), so a slow device doesn't stretch the launch
+        state.intro = Math.min(1, state.intro + Math.min(0.3, raw) / introDuration);
         if (state.intro >= 1) state.introPlaying = false;
       }
     }
@@ -101,7 +103,8 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 6.5 } = {}
     for (const fn of subs) fn(state);
 
     // Reduced motion renders on demand only; otherwise keep looping while visible.
-    if (active && !state.reduced && !document.hidden) raf = requestAnimationFrame(tick);
+    // The intro always runs to the end, even if the stage is briefly off-screen.
+    if ((active || state.introPlaying) && !state.reduced && !document.hidden) raf = requestAnimationFrame(tick);
   };
 
   const kick = () => {

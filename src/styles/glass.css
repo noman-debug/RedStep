@@ -1,5 +1,5 @@
-/* Glass, iOS style but matte, for every floating panel and control (Windows keeps its own
-   Mica look from platform.css): a dark tint over a softly blurred copy of what is behind, a
+/* Glass, iOS style but matte, for every floating panel and control, identical on every OS:
+   a dark tint over a softly blurred copy of what is behind, a
    faint film at the top, a hairline rim and a soft shadow. No shine. A modest blur keeps
    scrolling smooth. Panels get larger corners; buttons stay capsules. */
 :root {
@@ -11,7 +11,7 @@
   --lg-radius: 20px;
 }
 
-:root:not([data-platform='windows']) :is(.sb, .g-rail, .side, .actionbar, .profile-dock, .xp-clock, .xp-zoom, .xp-searchpill, .sb-reopen, .g-rail-open, .nav-links, .mw-home .btn--ghost, .skip-intro) {
+:root :is(.sb, .g-rail, .side, .actionbar, .profile-dock, .xp-clock, .xp-zoom, .xp-searchpill, .sb-reopen, .g-rail-open, .nav-links, .mw-home .btn--ghost, .skip-intro) {
   background: var(--lg-film), var(--lg-tint);
   -webkit-backdrop-filter: var(--lg-blur);
   backdrop-filter: var(--lg-blur);
@@ -19,30 +19,37 @@
   box-shadow: var(--lg-shadow);
 }
 
-:root:not([data-platform='windows']) :is(.sb, .g-rail, .side, .actionbar, .profile-dock) {
+:root :is(.sb, .g-rail, .side, .actionbar, .profile-dock) {
   border-radius: var(--lg-radius);
 }
 
 /* the main action: flat accent, no shine */
-:root:not([data-platform='windows']) :is(.btn-primary, .mw-home .btn--primary) {
+:root :is(.btn-primary, .mw-home .btn--primary) {
   background: var(--rust);
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(236, 125, 69, 0.18);
+  box-shadow: 0 4px 14px rgba(208, 96, 47, 0.18);
 }
 
-:root:not([data-platform='windows']) :is(.btn-primary, .mw-home .btn--primary):hover {
+:root :is(.btn-primary, .mw-home .btn--primary):hover {
   background: var(--ember);
+}
+
+/* phones and tablets: a lighter blur, so scrolling and the 3D scene stay smooth */
+@media (max-width: 820px), (pointer: coarse) {
+  :root {
+    --lg-blur: blur(12px) saturate(1.2);
+  }
 }
 
 /* phones: the sidebar is a bottom sheet, so only its top corners round */
 @media (max-width: 820px) {
-  :root:not([data-platform='windows']) .sb {
+  :root .sb {
     border-radius: var(--lg-radius) var(--lg-radius) 0 0;
   }
 }
 
 /* weak devices: no live blur over the moving 3D scene, the glass turns solid */
-:root .mw-home[data-quality='low'] :is(.chapter--left, .telemetry, .btn--ghost, .skip-intro, .glass) {
+:root .mw-home[data-quality='low'] :is(.btn--ghost, .skip-intro, .glass) {
   background: rgba(20, 20, 24, 0.94);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;

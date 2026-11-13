@@ -135,7 +135,7 @@
 }
 
 .xp-search input::placeholder { color: var(--ink-3); }
-.xp-search:focus-within { box-shadow: 0 0 0 3px rgba(255, 178, 91, 0.35); }
+.xp-search:focus-within { box-shadow: 0 0 0 3px rgba(227, 137, 90, 0.35); }
 .xp-search input::-webkit-search-cancel-button { filter: invert(0.6); }
 
 /* place card */
