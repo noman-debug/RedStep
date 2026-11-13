@@ -67,7 +67,9 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 2.2 } = {}
     raf = 0;
     const t = now / 1000;
     const raw = last ? t - last : 1 / 60;
-    const dt = Math.min(0.1, raw);
+    // Two callbacks in the same frame share a timestamp (dt = 0). Dividing by that made the
+    // velocity NaN for good, and NaN thrust drew the rocket black: treat it as a short frame.
+    const dt = Math.min(0.1, Math.max(raw, 1 / 240));
     last = t;
     state.dt = dt;
     state.time += dt;
@@ -88,6 +90,7 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 2.2 } = {}
       if (Math.abs(state.raw - state.progress) < 1e-5) state.progress = state.raw;
       const v = (state.progress - prev) / dt;
       state.velocity += (v - state.velocity) * Math.min(1, dt * 8);
+      if (!Number.isFinite(state.velocity)) state.velocity = 0;
 
       const kp = 1 - Math.exp(-dt * 3.5);
       state.pointer.sx += (state.pointer.x - state.pointer.sx) * kp;
@@ -104,7 +107,8 @@ export function createMotionEngine({ smoothing = 5.5, introDuration = 2.2 } = {}
 
     // Reduced motion renders on demand only; otherwise keep looping while visible.
     // The intro always runs to the end, even if the stage is briefly off-screen.
-    if ((active || state.introPlaying) && !state.reduced && !document.hidden) raf = requestAnimationFrame(tick);
+    // (and never queue a second frame if a subscriber already asked for one during this tick)
+    if ((active || state.introPlaying) && !state.reduced && !document.hidden && !raf) raf = requestAnimationFrame(tick);
   };
 
   const kick = () => {

@@ -107,7 +107,7 @@ export function SpaceWeatherPanel({ weather: w }) {
       </p>
       <p className="swx-src">
         {w.known ? `Checked ${checked}${w.stale ? ' (saved copy)' : ''} · ` : ''}
-        {w.donki ? 'NASA DONKI' : w.flux !== null ? 'NOAA GOES (NASA DONKI unreachable)' : 'NASA DONKI'}
+        {w.donki ? 'NASA DONKI' : w.flux !== null ? 'NOAA GOES flares and protons (NASA DONKI unreachable)' : 'NASA DONKI'}
         {' '}<Source k="donki" badge="nasa" />
       </p>
     </section>

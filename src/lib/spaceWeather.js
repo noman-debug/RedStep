@@ -27,14 +27,19 @@ async function getJson(url, ms = 12000) {
   }
 }
 
-/** DONKI from NASA's CCMC (no key), falling back to api.nasa.gov with the public demo key. */
+/**
+ * DONKI from NASA's CCMC (no key needed). There is no api.nasa.gov fallback any more: its
+ * shared DEMO_KEY allows only 10 calls an hour per network, so visitors saw 429 errors.
+ * If CCMC is down, flares come from NOAA's GOES feed and particle storms from GOES protons.
+ */
 async function donki(kind, start, end) {
-  const q = `startDate=${start}&endDate=${end}`
-  try {
-    return await getJson(`https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/${kind}?${q}`)
-  } catch {
-    return getJson(`https://api.nasa.gov/DONKI/${kind}?${q}&api_key=DEMO_KEY`)
-  }
+  return getJson(`https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/${kind}?startDate=${start}&endDate=${end}`, 8000)
+}
+
+/** Flares of the last 7 days from NOAA SWPC's GOES X-ray feed (no key), DONKI's format. */
+async function noaaFlares() {
+  const rows = await getJson('https://services.swpc.noaa.gov/json/goes/primary/xray-flares-7-day.json')
+  return rows.filter((r) => r.max_class).map((r) => ({ classType: r.max_class, peakTime: r.max_time, beginTime: r.begin_time }))
 }
 
 /** Latest >=10 MeV integral proton flux at GOES (pfu), or null. */
@@ -49,10 +54,12 @@ async function goesProtons() {
 export async function fetchSpaceWeather(now = Date.now()) {
   const start = ymd(now - 7 * DAY)
   const end = ymd(now)
-  const [flr, sep, goes] = await Promise.allSettled([donki('FLR', start, end), donki('SEP', start, end), goesProtons()])
+  let flaresFrom = 'donki'
+  const [flr, sep, goes] = await Promise.allSettled([donki('FLR', start, end).catch(() => { flaresFrom = 'noaa'; return noaaFlares() }), donki('SEP', start, end), goesProtons()])
   return {
     checkedAt: now,
-    donki: flr.status === 'fulfilled' || sep.status === 'fulfilled',
+    // DONKI answered only if SEP did, or flares came from it rather than from NOAA
+    donki: sep.status === 'fulfilled' || (flr.status === 'fulfilled' && flaresFrom === 'donki'),
     flares: flr.status === 'fulfilled' ? flr.value.map((f) => ({ cls: f.classType, at: Date.parse(f.peakTime || f.beginTime) })).filter((f) => f.cls) : null,
     seps: sep.status === 'fulfilled' ? sep.value.map((e) => ({ at: Date.parse(e.eventTime) })) : null,
     goes: goes.status === 'fulfilled' ? goes.value : null,

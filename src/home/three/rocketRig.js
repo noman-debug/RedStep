@@ -166,7 +166,7 @@ export function createRocketRig({ quality = 'high' } = {}) {
     for (const hot of [0, 1]) {
       // a cone from the nozzle (y = 0) down to y = -1; length is scaled in the shader
       const r0 = exitR[k] * (hot ? 0.62 : 0.95);
-      const r1 = exitR[k] * (hot ? 0.35 : 2.6);
+      const r1 = exitR[k] * (hot ? 0.4 : 3.8); // the outer flame flares out behind the nozzle
       const g = new THREE.CylinderGeometry(r0, r1, 1, RAD, HSEG, true);
       g.translate(0, -0.5, 0);
       const m = new THREE.ShaderMaterial({
@@ -175,7 +175,7 @@ export function createRocketRig({ quality = 'high' } = {}) {
         uniforms: {
           uTime: { value: 0 },
           uThrust: { value: 1 },
-          uLen: { value: (k === 0 ? 0.42 : 0.34) * (hot ? 0.45 : 1) },
+          uLen: { value: (k === 0 ? 0.68 : 0.58) * (hot ? 0.42 : 1) },
           uHot: { value: hot },
           uSeed: { value: k * 3.1 + hot * 1.7 },
         },
@@ -258,6 +258,7 @@ export function createRocketRig({ quality = 'high' } = {}) {
 
   return {
     group,
+    vehicleMat,
     body,
     stats: { triangles: vehicleGeo.attributes.position.count / 3, particles: COUNT, flames: flames.length },
     /** Slow device: draw fewer smoke puffs (level 1: half, 2: a quarter) instead of a blurrier frame. */
