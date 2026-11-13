@@ -339,22 +339,6 @@ The route worker loads the site's terrain, derives slope and creates the planner
 
 ---
 
-## Offline and installation support
-
-The production build generates a service worker. It precaches the app shell and a selected set of core assets and Jezero data, then caches additional supported resources as they are used.
-
-A few practical notes:
-
-- Open the deployed app once while online before expecting offline use.
-- Offline availability depends on which pages and datasets have already been cached.
-- Large imagery and some site datasets may be fetched the first time they are opened.
-- Development mode does not register the production service worker.
-- Clearing browser storage or site data removes the local cache.
-
-The app also includes a web app manifest and icons for supported install-to-home-screen flows.
-
----
-
 ## Roadmap
 
 This is a direction-of-work list, not a promise that every item is already implemented or scheduled.
