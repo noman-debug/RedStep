@@ -134,9 +134,6 @@
   gap: 8px;
 }
 
-.ab-suggest .btn-primary {
-  min-height: 42px;
-}
 
 .ab-appetite {
   display: flex;
@@ -186,11 +183,6 @@
   color: var(--ember);
 }
 
-.ab-tools .btn.on {
-  background: var(--ember);
-  color: #000;
-  border-color: var(--ember);
-}
 
 .ab-tools .btn:disabled,
 .ab-suggest .btn:disabled {
@@ -1041,7 +1033,7 @@
   }
   .ab-site { display: none; }
   .ab-suggest { width: 100%; flex-wrap: wrap; }
-  .ab-suggest .btn-primary { flex: 1 1 100%; min-height: 44px; }
+  .ab-suggest .btn-primary { flex: 1 1 100%; }
   .ab-appetite { flex: 1; }
   .ab-appetite button { flex: 1; padding: 0 8px; }
   .ab-tools { padding-top: 8px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; }
@@ -1264,9 +1256,6 @@
   padding: 10px;
 }
 
-.ab-main {
-  min-height: 42px;
-}
 
 .ab-or {
   font-size: 13px;
@@ -1572,12 +1561,11 @@
   .actionbar::-webkit-scrollbar { display: none; }
   .actionbar > *,
   .ab-after > * { flex: none; }
-  .ab-main { flex: none; min-height: 40px; padding: 0 16px; font-size: 14px; }
+  .ab-main { flex: none; }
   .ab-appetite { flex: none; }
   .ab-appetite button { flex: none; height: 32px; padding: 0 10px; }
   .ab-or { display: none; }
   .ab-after { display: contents; }
-  .actionbar .btn-small { min-height: 40px; }
 }
 
 /* The tools after the walk-length switch. On wide screens they sit inline in the bar. */
@@ -1654,17 +1642,7 @@
   flex: 1 1 auto;
 }
 
-:root .actionbar .ab-main {
-  min-height: 40px;
-  padding: 0 16px;
-  font-size: 15px;
-}
 
-:root .actionbar .btn-small {
-  min-height: 36px;
-  padding: 0 12px;
-  font-size: 14px;
-}
 
 .ab-appetite {
   flex: none;

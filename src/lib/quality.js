@@ -19,10 +19,7 @@ export function deviceTier() {
     gl?.getExtension('WEBGL_lose_context')?.loseContext()
   } catch { /* no WebGL: the views show their fallbacks */ }
   const softwareGpu = /swiftshader|llvmpipe|software|basic render/i.test(gpu)
-  // Integrated Intel graphics are common in laptops but often struggle with high-DPI WebGL.
-  // Start them at the lighter tier; users can still override with ?quality=high.
-  const integratedGpu = /Intel.*(HD Graphics|UHD Graphics|Iris Xe)|AMD Radeon.*Graphics/i.test(gpu)
-  cached = saveData || softwareGpu || integratedGpu || mem <= 4 || cores <= 4 ? 'low' : 'high'
+  cached = saveData || softwareGpu || mem <= 4 || cores <= 4 ? 'low' : 'high'
   return cached
 }
 

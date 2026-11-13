@@ -263,10 +263,6 @@ export function createRocketRig({ quality = 'high' } = {}) {
     stats: { triangles: vehicleGeo.attributes.position.count / 3, particles: COUNT, flames: flames.length },
     /** Slow device: draw fewer smoke puffs (level 1: half, 2: a quarter) instead of a blurrier frame. */
     lighten(level) {
-      plumeGeo.setDrawRange(0, Math.round(COUNT / 2 ** level));
-    },
-    /** Slow device: draw fewer smoke puffs (level 1: half, 2: a quarter) instead of a blurrier frame. */
-    lighten(level) {
       plumeGeo.setDrawRange(0, Math.round(COUNT / 2 ** level))
     },
     /** Per-frame uniform writes only. */

@@ -317,70 +317,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.mw-home .btn {
-  --btn-h: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-3);
-  min-height: var(--btn-h);
-  padding: 0 var(--s-5);
-  border: 1px solid transparent;
-  border-radius: var(--r-1);
-  font-family: var(--font-display);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-semibold);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background-color var(--dur-2) var(--ease),
-    border-color var(--dur-2) var(--ease),
-    box-shadow var(--dur-2) var(--ease),
-    color var(--dur-2) var(--ease),
-    transform var(--dur-2) var(--ease);
-}
-
-.mw-home .btn span[aria-hidden] {
-  transition: transform var(--dur-2) var(--ease);
-}
-
-.mw-home .btn:hover span[aria-hidden] {
-  transform: translateX(3px);
-}
-
-.mw-home .btn--primary {
-  background: var(--rust);
-  color: #160904;
-  box-shadow: var(--glow-rust);
-}
-
-.mw-home .btn--primary:hover {
-  background: var(--ember);
-  box-shadow: var(--glow-ember);
-}
-
-.mw-home .btn--ghost {
-  background: rgb(4 8 14 / 0.3);
-  border-color: var(--line-3);
-  color: var(--ink-1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.mw-home .btn--ghost:hover {
-  border-color: var(--ember);
-  color: var(--ember-100);
-}
-
-.mw-home .btn--sm {
-  --btn-h: 38px;
-  padding: 0 var(--s-4);
-  font-size: 0.6875rem;
-}
-
 .mw-home .glass {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -1164,16 +1100,7 @@
     flex-wrap: nowrap;
   }
 
-.mw-home .cta-row .btn {
-    --btn-h: 42px;
-    padding: 0 var(--s-3);
-    font-size: 0.625rem;
-    letter-spacing: 0.1em;
-  }
 
-.mw-home .cta-row .btn--ghost {
-    flex: none;
-  }
 
 .mw-home .cta-long {
     display: none;
@@ -1339,39 +1266,7 @@
   line-height: 1.6;
 }
 
-/* buttons: the app's pill buttons */
-.mw-home .btn {
-  --btn-h: 48px;
-  border-radius: var(--r-pill);
-  font-size: 15px;
-  letter-spacing: 0.01em;
-  text-transform: none;
-}
 
-.mw-home .btn--primary {
-  box-shadow: none;
-}
-
-.mw-home .btn--primary:hover {
-  box-shadow: none;
-}
-
-.mw-home .btn--ghost {
-  background: var(--glass-bg);
-  border: 0.5px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-}
-
-.mw-home .btn--ghost:hover {
-  border-color: rgba(255, 255, 255, 0.32);
-  color: var(--ink);
-}
-
-.mw-home .btn--sm {
-  --btn-h: 38px;
-  font-size: 13px;
-}
 
 /* glass: the Explorer sidebar material */
 .mw-home .glass,
@@ -1622,15 +1517,6 @@
     margin-bottom: var(--s-4);
   }
 
-  
-
-  .mw-home .cta-row .btn {
-    --btn-h: 44px;
-    padding: 0 var(--s-4);
-    font-size: 14px;
-    letter-spacing: 0.01em;
-  }
-
 }
 
 /* pins: only the chosen or hovered site shows its name, so close sites don't overlap */
@@ -1664,7 +1550,6 @@
 /* Weaker devices: the panels sit over a moving 3D scene, and re-blurring it every frame is
    costly, so they turn solid instead. */
 .mw-home[data-quality='low'] .glass,
-.mw-home[data-quality='low'] .btn--ghost,
 .mw-home[data-quality='low'] .skip-intro,
 .mw-home[data-quality='low'] .badge__tip {
   background: rgba(20, 20, 24, 0.94);
@@ -1689,17 +1574,6 @@
 /* The title already points at Mars; its label sat on top of the copy. */
 .mw-home .body-label--left {
   display: none;
-}
-
-/* outline button in the accent colour, so both calls to action read as buttons */
-.mw-home .btn--ghost {
-  border-color: rgba(227, 137, 90, 0.45);
-  color: var(--ember-100);
-}
-
-.mw-home .btn--ghost:hover {
-  border-color: var(--ember);
-  color: var(--ember);
 }
 
 /* compact live card: three readings */
@@ -1738,7 +1612,6 @@
 
   
 }
-
 
 /* the top layer lifts most, the bottom one stays: the stack breathes open and shut */
 
@@ -2585,7 +2458,6 @@ html.intro-lock {
 .mw-home :is(.btn, .badge__chip, .chip) { white-space: nowrap; padding-inline: max(1em, 14px); }
 /* one soft shadow level instead of stacked glows */
 .mw-home :is(.glass, .telemetry, .chapter--left, .chapter--choose, .feature) { box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28); }
-.mw-home .btn { box-shadow: none; }
 
 /* ---- 2026-11 reference layout (wide screens): the scene owns the frame like the reference
    image; the copy is a compact column bottom-right, the live strip is plain text, no box ---- */
@@ -2659,33 +2531,6 @@ html.intro-lock {
   grid-template-columns: 1fr;
   gap: 10px;
   max-width: 20rem;
-}
-
-.mw-home .hero2 .cta-row .btn {
-  width: 100%;
-  height: 50px;
-  padding: 0 20px;
-  justify-content: space-between;
-  border-radius: 14px;
-  font: 600 16px / 1 var(--font);
-  letter-spacing: 0;
-  box-shadow: none;
-}
-
-.mw-home .hero2 .cta-row .btn--primary {
-  background: #f5f5f7;
-  color: #14110f;
-}
-
-.mw-home .hero2 .cta-row .btn--primary:hover {
-  background: #fff;
-}
-
-.mw-home .hero2 .cta-row .btn--ghost {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
 }
 
 @media (min-width: 861px) and (min-aspect-ratio: 1/1) {

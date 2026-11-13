@@ -11,7 +11,7 @@
   --lg-radius: 20px;
 }
 
-:root :is(.sb, .g-rail, .side, .actionbar, .profile-dock, .xp-clock, .xp-zoom, .xp-searchpill, .sb-reopen, .g-rail-open, .nav-links, .mw-home .btn--ghost, .skip-intro) {
+:root :is(.sb, .g-rail, .side, .actionbar, .profile-dock, .xp-clock, .xp-zoom, .xp-searchpill, .sb-reopen, .g-rail-open, .nav-links, .skip-intro) {
   background: var(--lg-film), var(--lg-tint);
   -webkit-backdrop-filter: var(--lg-blur);
   backdrop-filter: var(--lg-blur);
@@ -21,17 +21,6 @@
 
 :root :is(.sb, .g-rail, .side, .actionbar, .profile-dock) {
   border-radius: var(--lg-radius);
-}
-
-/* the main action: flat accent, no shine */
-:root :is(.btn-primary, .mw-home .btn--primary) {
-  background: var(--rust);
-  border-color: transparent;
-  box-shadow: 0 4px 14px rgba(208, 96, 47, 0.18);
-}
-
-:root :is(.btn-primary, .mw-home .btn--primary):hover {
-  background: var(--ember);
 }
 
 /* phones and tablets: a lighter blur, so scrolling and the 3D scene stay smooth */
@@ -49,7 +38,7 @@
 }
 
 /* weak devices: no live blur over the moving 3D scene, the glass turns solid */
-:root .mw-home[data-quality='low'] :is(.btn--ghost, .skip-intro, .glass) {
+:root .mw-home[data-quality='low'] :is(.skip-intro, .glass) {
   background: rgba(20, 20, 24, 0.94);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;

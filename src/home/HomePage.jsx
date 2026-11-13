@@ -163,13 +163,22 @@ export default function HomePage() {
   // devices: holding the map code next to the 3D scene costs memory they don't have).
   useEffect(() => {
     if (deviceTier() === 'low') return undefined;
-    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 2500));
-    const id = idle(() => {
-      import('../pages/MapPage.jsx').catch(() => {});
-      import('../components/Explorer.jsx').catch(() => {});
-      import('../pages/Site.jsx').catch(() => {});
-    });
-    return () => (window.cancelIdleCallback || clearTimeout)(id);
+    // ...but only once the page has fully loaded and settled, and not on slow or metered
+    // connections: fetched early it competed with the scene's own code and planet images
+    const conn = navigator.connection;
+    if (conn?.saveData || /(^|-)2g|3g/.test(conn?.effectiveType || '')) return undefined;
+    let id = 0;
+    const go = () => {
+      const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1));
+      id = setTimeout(() => idle(() => {
+        import('../pages/MapPage.jsx').catch(() => {});
+        import('../components/Explorer.jsx').catch(() => {});
+        import('../pages/Site.jsx').catch(() => {});
+      }), 3500);
+    };
+    if (document.readyState === 'complete') go();
+    else window.addEventListener('load', go, { once: true });
+    return () => { clearTimeout(id); window.removeEventListener('load', go); };
   }, []);
 
   const goChoose = () => engine.scrollToProgress(0.97);
@@ -186,19 +195,19 @@ export default function HomePage() {
 
           {/* ---- Hero: the title, one line of what it does, two ways in ---- */}
           <div className="hero2 chapter" data-chapter="hero" style={{ '--w': 'var(--w-hero)' }}>
-            <p className="hero2__over reveal" style={{ '--at': 0.86 }}>{HOME.kicker}</p>
+            <p className="hero2__over reveal" style={{ '--at': 0.08 }}>{HOME.kicker}</p>
             <h1 className="hero2__title">
-              <span className="reveal-line" style={{ '--at': 0.87 }}>The first</span>
-              <span className="reveal-line" style={{ '--at': 0.885 }}>walk on</span>
-              <span className="reveal-line hero2__mars" style={{ '--at': 0.9 }}><em>Mars.</em></span>
+              <span className="reveal-line" style={{ '--at': 0.1 }}>The first</span>
+              <span className="reveal-line" style={{ '--at': 0.13 }}>walk on</span>
+              <span className="reveal-line hero2__mars" style={{ '--at': 0.16 }}><em>Mars.</em></span>
             </h1>
-            <p className="hero2__lead reveal" style={{ '--at': 0.91 }}>{HOME.lead}</p>
-            <div className="cta-row reveal" style={{ '--at': 0.92 }}>
-              <button type="button" className="btn btn--primary" onClick={goChoose}>
+            <p className="hero2__lead reveal" style={{ '--at': 0.2 }}>{HOME.lead}</p>
+            <div className="cta-row reveal" style={{ '--at': 0.24 }}>
+              <button type="button" className="btn btn-primary" onClick={goChoose}>
                 {HOME.ctaPrimary}
                 <span aria-hidden="true">↓</span>
               </button>
-              <Link to="/site/jezero" className="btn btn--ghost" aria-label={HOME.ctaWalk}>
+              <Link to="/site/jezero" className="btn" aria-label={HOME.ctaWalk}>
                 <span className="cta-long">{HOME.ctaWalk}</span>
                 <span className="cta-short">{HOME.ctaWalkShort}</span>
                 <span aria-hidden="true">→</span>
@@ -207,7 +216,7 @@ export default function HomePage() {
           </div>
 
           {/* ---- Live strip: Mars right now, worked out in the browser ---- */}
-          <aside className="strip reveal" data-chapter="hero" style={{ '--at': 0.93 }} aria-label="Mars right now, computed in your browser">
+          <aside className="strip reveal" data-chapter="hero" style={{ '--at': 0.3 }} aria-label="Mars right now, computed in your browser">
             <div className="strip__head">
               <span className="strip__live"><i aria-hidden="true" />Mars right now</span>
               <Badge kind="derived" source="mars24" align="end" note={HOME.telemetryNote} />

@@ -244,21 +244,24 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   // Mars and the Moon use NASA maps; their drawn-in-the-browser versions are only a fallback,
   // made if a map fails to load. Earth keeps its baked map for the ocean glint and clouds.
   // Weaker devices bake at half size.
-  const B = low ? 1024 : 2048;
+  const B = low ? 512 : 2048;
   const placeholder = (hex) => {
     const c = new THREE.Color(hex);
     const t = new THREE.DataTexture(new Uint8Array([c.r * 255, c.g * 255, c.b * 255, 128]), 1, 1);
     t.needsUpdate = true;
     return { texture: t, dispose: () => t.dispose() };
   };
+  // On low-tier devices, avoid synchronous GPU texture-bake passes during startup. NASA maps
+  // replace these tiny placeholders as soon as their image requests finish; the star field
+  // keeps the sky alive without a costly full-screen bake.
   const marsRT = textures.mars ? placeholder('#8a4f36') : bake(renderer, BAKE_MARS, B, B / 2, { uSeed: { value: 4.21 } });
-  const earthRT = bake(renderer, BAKE_EARTH, B, B / 2, { uSeed: { value: 1.3 } });
-  const earthAuxRT = bake(renderer, BAKE_EARTH_AUX, B, B / 2, { uSeed: { value: 1.3 } });
-  const moonRT = textures.moon ? placeholder('#5c5b5a') : bake(renderer, BAKE_MOON, 1024, 512, { uSeed: { value: 7.7 } });
+  const earthRT = low ? placeholder('#173044') : bake(renderer, BAKE_EARTH, B, B / 2, { uSeed: { value: 1.3 } });
+  const earthAuxRT = low ? placeholder('#000000') : bake(renderer, BAKE_EARTH_AUX, B, B / 2, { uSeed: { value: 1.3 } });
+  const moonRT = textures.moon ? placeholder('#5c5b5a') : bake(renderer, BAKE_MOON, low ? 512 : 1024, low ? 256 : 512, { uSeed: { value: 7.7 } });
   // Milky Way haze passes through the reference's upper-right (≈1300, 200 px).
   const bandD = new THREE.Vector3(0.29, 0.17, -0.94).normalize();
   const bandT = new THREE.Vector3(0.78, 0.62, 0.12).normalize(); // runs up-right toward (1500, 40)
-  const skyRT = bake(renderer, BAKE_SKY, B, B / 2, {
+  const skyRT = low ? placeholder('#030914') : bake(renderer, BAKE_SKY, B, B / 2, {
     uSeed: { value: 2.2 },
     uBandNormal: { value: new THREE.Vector3().crossVectors(bandD, bandT).normalize() },
     uBandCentre: { value: bandD },

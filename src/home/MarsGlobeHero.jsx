@@ -1,5 +1,4 @@
 import { useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { createHeroScene } from './three/heroScene.js';
 import { globeTexture } from '../data/index.js';
 import { deviceTier } from '../lib/quality.js';
 
@@ -32,56 +31,91 @@ export default function MarsGlobeHero({ engine, sites, ref }) {
 
   useEffect(() => {
     const wrap = wrapRef.current;
-    // Weaker devices (or ones whose frames run slow) get solid panels instead of live blur.
+    // Paint the page before downloading and compiling Three.js. The cinematic starts as soon
+    // as the browser has had two frames to display the headline and controls.
     const root = wrap.closest('.mw-home');
     const setQuality = (q) => root && (root.dataset.quality = q);
     const quality = deviceTier();
     setQuality(quality);
+
+    let disposed = false;
+    let frame = 0;
     let scene;
-    try {
-      scene = createHeroScene(canvasRef.current, {
-        sites,
-        dom: { labels: { earth: labels.earth.current, moon: labels.moon.current, mars: labels.mars.current } },
-        quality,
-        onQuality: setQuality,
-        // Real NASA planet maps from the app's data folder; the procedural ones stay as fallback.
-        textures: { mars: globeTexture('mars-viking-2k.jpg'), earth: globeTexture('earth-day-2k.jpg'), earthNight: globeTexture('earth-night-2k.jpg'), moon: globeTexture('moon-lro-2k.jpg') },
-      });
-    } catch (err) {
-      console.warn('[MarsGlobeHero] WebGL unavailable, using static poster.', err);
-      setFailed(true);
-      return undefined;
-    }
-    sceneRef.current = scene;
-    if (import.meta.env.DEV) window.__marswalkScene = scene;
+    let cleanupScene = () => {};
 
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      scene.resize(width, height);
-      engine.requestFrame();
-    });
-    ro.observe(wrap);
+    const startScene = async () => {
+      try {
+        const { createHeroScene } = await import('./three/heroScene.js');
+        if (disposed) return;
 
-    let visible = true;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        visible = entry.isIntersecting;
-        engine.setActive(visible);
-      },
-      { threshold: 0 },
-    );
-    io.observe(wrap);
+        // Real NASA planet maps from the app's data folder; procedural maps remain as fallback.
+        // WebP (about 40% smaller); the Moon is small on screen, so 1K is plenty.
+        scene = createHeroScene(canvasRef.current, {
+          sites,
+          dom: { labels: { earth: labels.earth.current, moon: labels.moon.current, mars: labels.mars.current } },
+          quality,
+          onQuality: setQuality,
+          textures: {
+            mars: globeTexture('mars-viking-2k.webp'),
+            earth: globeTexture('earth-day-2k.webp'),
+            earthNight: globeTexture('earth-night-2k.webp'),
+            moon: globeTexture('moon-lro-1k.webp'),
+          },
+        });
+        if (disposed) {
+          scene.dispose();
+          return;
+        }
 
-    const unsub = engine.subscribe((state) => {
-      if (visible && !paused.current) scene.update(state);
+        sceneRef.current = scene;
+        if (import.meta.env.DEV) window.__marswalkScene = scene;
+
+        const ro = new ResizeObserver(([entry]) => {
+          const { width, height } = entry.contentRect;
+          scene.resize(width, height);
+          engine.requestFrame();
+        });
+        ro.observe(wrap);
+
+        let visible = true;
+        const io = new IntersectionObserver(
+          ([entry]) => {
+            visible = entry.isIntersecting;
+            engine.setActive(visible);
+          },
+          { threshold: 0 },
+        );
+        io.observe(wrap);
+
+        const unsub = engine.subscribe((state) => {
+          if (visible && !paused.current) scene.update(state);
+        });
+
+        cleanupScene = () => {
+          unsub();
+          io.disconnect();
+          ro.disconnect();
+          scene.dispose();
+          sceneRef.current = null;
+        };
+      } catch (err) {
+        if (!disposed) {
+          console.warn('[MarsGlobeHero] WebGL unavailable, using static poster.', err);
+          setFailed(true);
+        }
+      }
+    };
+
+    // Two animation frames let the browser commit the real page before the Three.js chunk is
+    // requested. This is a perceived-load improvement; it does not remove or downgrade the scene.
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(startScene);
     });
 
     return () => {
-      unsub();
-      io.disconnect();
-      ro.disconnect();
-      scene.dispose();
-      sceneRef.current = null;
+      disposed = true;
+      cancelAnimationFrame(frame);
+      cleanupScene();
     };
     // The scene is created once; sites are static content.
     // eslint-disable-next-line react-hooks/exhaustive-deps

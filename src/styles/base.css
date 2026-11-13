@@ -194,52 +194,7 @@ canvas {
   border-radius: var(--r-3);
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--s-3);
-  min-height: 48px;
-  padding: 0 var(--s-5);
-  border-radius: var(--r-pill);
-  border: 1px solid var(--rule);
-  background: transparent;
-  font-weight: 600;
-  font-size: 15px;
-  letter-spacing: 0.01em;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: background var(--d-ui) var(--ease), border-color var(--d-ui) var(--ease), color var(--d-ui) var(--ease), transform var(--d-ui) var(--ease);
-}
-
-.btn:hover {
-  border-color: var(--ink-2);
-}
-
-.btn-primary {
-  background: var(--rust);
-  border-color: var(--rust);
-  color: #120703;
-}
-
-.btn-primary:hover {
-  background: var(--ember);
-  border-color: var(--ember);
-}
-
-.btn-small {
-  min-height: 36px;
-  padding: 0 var(--s-4);
-  font-size: 13px;
-}
-
-.btn .arrow {
-  transition: transform var(--d-ui) var(--ease);
-}
-
-.btn:hover .arrow {
-  transform: translateX(3px);
-}
+/* buttons: defined once, in styles/theme.css (the one button system) */
 
 .chip {
   display: inline-flex;
