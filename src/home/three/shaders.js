@@ -784,21 +784,22 @@ void main(){
   int i = int(aNozzle + 0.5);
   vec3 origin = uNozzle[i];
   float r0 = uNozzleR[i];
-  float age = fract(uTime * (0.32 + aSeed.x * 0.22) + aSeed.w);
-  float len = uLen * (i == 0 ? 1.0 : 0.85) * (0.8 + 0.4 * aSeed.y);
+  // A continuous exhaust trail: puffs leave the nozzle fast, stream straight back and
+  // spread out as they slow, so the column is tight at the engines and wide far behind
+  float age = fract(uTime * (0.55 + aSeed.x * 0.3) + aSeed.w);
+  float len = uLen * (i == 0 ? 1.0 : 0.9) * (0.85 + 0.3 * aSeed.y);
   vec2 dir = normalize(aSeed.yz * 2.0 - 1.0 + vec2(1e-3));
-  float spread = r0 * (1.2 + pow(age, 0.8) * 9.0) * sqrt(aSeed.z);
-  float start = 0.22; // smoke starts where the flame thins out
-  vec3 pos = origin + vec3(dir.x * spread, -(start + age) * len * 0.75, dir.y * spread);
-  // billowing: each puff curls outward and rolls as it slows down
-  float t = uTime * 0.5 + aSeed.w * 40.0;
-  pos.xz += vec2(sin(t + age * 5.0), cos(t * 0.9 + age * 4.0)) * 0.045 * age * age;
-  pos.y += sin(t * 1.3 + aSeed.x * 20.0) * 0.02 * age;
+  float spread = r0 * (0.9 + pow(age, 1.15) * 7.5) * sqrt(aSeed.z);
+  float along = 0.05 + (1.0 - pow(1.0 - age, 1.6)) * 1.05; // fast near the nozzle, easing off
+  vec3 pos = origin + vec3(dir.x * spread, -along * len, dir.y * spread);
+  // gentle turbulence that grows with distance (no sideways drift right at the engines)
+  float t = uTime * 0.7 + aSeed.w * 40.0;
+  pos.xz += vec2(sin(t + age * 6.0), cos(t * 0.9 + age * 5.0)) * 0.035 * age * age;
   vec4 mv = modelViewMatrix * vec4(pos, 1.0);
   vAge = age;
   vSeed = aSeed;
-  vA = smoothstep(0.0, 0.12, age) * (1.0 - smoothstep(0.55, 1.0, age)) * uThrust;
-  float size = (0.05 + age * 0.3) * (0.6 + 0.8 * aSeed.x);
+  vA = smoothstep(0.0, 0.04, age) * (1.0 - smoothstep(0.45, 1.0, age)) * uThrust;
+  float size = (0.035 + age * 0.26) * (0.7 + 0.6 * aSeed.x);
   gl_PointSize = max(2.0, size * uPx / -mv.z);
   gl_Position = projectionMatrix * mv;
 }
@@ -828,12 +829,13 @@ void main(){
   a *= smoothstep(0.15, 0.55, n + 0.25 * (1.0 - d)); // ragged, broken-up edges
   // fake volume: puffs are lit from the flame above and the sun upper-right, darker underneath
   float shade = 0.62 + 0.5 * clamp(-uv.y * 1.4 + uv.x * 0.6 + 0.5, 0.0, 1.0);
-  vec3 hot = vec3(1.0, 0.7, 0.42);
-  vec3 warm = vec3(0.86, 0.72, 0.6);
-  vec3 grey = vec3(0.56, 0.56, 0.6);
-  vec3 c = mix(hot, warm, smoothstep(0.0, 0.18, vAge));
-  c = mix(c, grey, smoothstep(0.15, 0.6, vAge)) * shade * (0.8 + 0.3 * n);
-  gl_FragColor = vec4(c, a * vA * 0.38);
+  // flame-lit cream at the engines, cooling to a soft white-grey further back
+  vec3 hot = vec3(1.0, 0.78, 0.5);
+  vec3 cream = vec3(0.96, 0.88, 0.78);
+  vec3 grey = vec3(0.72, 0.71, 0.72);
+  vec3 c = mix(hot, cream, smoothstep(0.0, 0.2, vAge));
+  c = mix(c, grey, smoothstep(0.25, 0.85, vAge)) * shade * (0.82 + 0.3 * n);
+  gl_FragColor = vec4(c, a * vA * 0.5);
 }
 `;
 

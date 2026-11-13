@@ -315,30 +315,6 @@ export default function HomePage() {
 
 
 
-      <footer className="home-end">
-        <div className="home-end__top">
-          <p className="home-end__title">Ready to plan <em>a walk?</em></p>
-          <div className="home-end__actions">
-            <Link to="/map" className="btn btn--primary">
-              Open the Mars map <span aria-hidden="true">→</span>
-            </Link>
-            <Link to="/site/jezero" className="btn btn--ghost">
-              Plan a walk at Jezero
-            </Link>
-          </div>
-        </div>
-        <nav className="home-end__links" aria-label="Footer">
-          {FOOTER_NAV.map((n) => (
-            <Link key={n.to} to={n.to}>
-              {n.label}
-            </Link>
-          ))}
-        </nav>
-        <p className="home-end__legal">
-          {SITE.name} · {SITE.by} · {SITE.challenge}. {SITE.disclaimer} Mission data courtesy of NASA, JPL-Caltech, USGS
-          Astrogeology, ASU and ESA, credited on the <Link to="/sources">Data &amp; sources</Link> page.
-        </p>
-      </footer>
     </div>
   );
 }

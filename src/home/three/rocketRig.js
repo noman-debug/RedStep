@@ -54,21 +54,18 @@ function tag(g, part) {
 /** "REDSTEP" lettering, drawn once into a small texture (redrawn when the font arrives). */
 function letteringTexture() {
   const c = document.createElement('canvas');
-  c.width = 2048;
-  c.height = 256;
+  c.width = 1024;
+  c.height = 128;
   const tex = new THREE.CanvasTexture(c);
   tex.anisotropy = 8;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
-  tex.generateMipmaps = true;
   const draw = () => {
     const ctx = c.getContext('2d');
     ctx.clearRect(0, 0, c.width, c.height);
     ctx.fillStyle = '#000';
-    ctx.font = '700 168px "Syne", "Helvetica Neue", Arial, sans-serif';
+    ctx.font = '700 84px "Syne", "Helvetica Neue", Arial, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '28px';
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '14px';
     ctx.fillText('REDSTEP', c.width / 2, c.height / 2 + 4);
     tex.needsUpdate = true;
   };
@@ -86,7 +83,7 @@ export function createRocketRig({ quality = 'high' } = {}) {
   group.add(body);
 
   /* ---- Vehicle ---- */
-  const SEG = low ? 48 : 64; // round hull on every device
+  const SEG = low ? 64 : 96; // round, smooth hull on every device
   const parts = [
     lathe(coreProfile, 0.045, 1.0, 0.004, SEG, 0, 0),
     lathe(boosterProfile, 0.05, 0.6, 0.004, Math.round(SEG * 0.75), BOOST_X, 1),
@@ -222,7 +219,7 @@ export function createRocketRig({ quality = 'high' } = {}) {
     uniforms: {
       uTime: { value: 0 },
       uThrust: { value: 1 },
-      uLen: { value: 1.5 },
+      uLen: { value: 2.2 }, // trail length in rocket lengths
       uPx: { value: 1000 },
       uNozzle: { value: nozzles },
       uNozzleR: { value: exitR },
@@ -263,6 +260,14 @@ export function createRocketRig({ quality = 'high' } = {}) {
     group,
     body,
     stats: { triangles: vehicleGeo.attributes.position.count / 3, particles: COUNT, flames: flames.length },
+    /** Slow device: draw fewer smoke puffs (level 1: half, 2: a quarter) instead of a blurrier frame. */
+    lighten(level) {
+      plumeGeo.setDrawRange(0, Math.round(COUNT / 2 ** level));
+    },
+    /** Slow device: draw fewer smoke puffs (level 1: half, 2: a quarter) instead of a blurrier frame. */
+    lighten(level) {
+      plumeGeo.setDrawRange(0, Math.round(COUNT / 2 ** level))
+    },
     /** Per-frame uniform writes only. */
     update({ time, thrust, px, fade, sunWorld, camera, smoke = 1, legs: legDeploy = 0, bounce }) {
       setLegs(legDeploy);
