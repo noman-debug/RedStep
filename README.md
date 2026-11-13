@@ -355,47 +355,6 @@ The app also includes a web app manifest and icons for supported install-to-home
 
 ---
 
-## Contributing
-
-Contributions, bug reports and thoughtful suggestions are welcome.
-
-### A useful contribution workflow
-
-1. Fork the repository.
-2. Create a branch for your change.
-3. Install dependencies with `npm install`.
-4. Make a focused change.
-5. Run `npm test` and `npm run build`.
-6. Include screenshots or a short recording for visible UI changes.
-7. Open a pull request describing the problem, the solution and how you tested it.
-
-Example:
-
-```bash
-git checkout -b feat/describe-your-change
-npm install
-npm test
-npm run build
-git add .
-git commit -m "Describe the change"
-git push -u origin feat/describe-your-change
-```
-
-### Contribution guidelines
-
-- Keep scientific claims traceable to a source.
-- Distinguish measured data, derived calculations and illustrative assumptions.
-- Do not present model estimates as live telemetry or certified safety guidance.
-- Preserve attribution and licensing notes for datasets and media.
-- Avoid committing `node_modules/`, `dist/`, raw source downloads or local secrets.
-- Do not commit API keys, tokens or private credentials.
-- For performance changes, test on both a capable device and a lower-powered device when possible.
-- For route-planning changes, add or update tests for the relevant calculations and edge cases.
-
-If you are unsure whether a change belongs in the project, open an issue or discussion before doing extensive work.
-
----
-
 ## Roadmap
 
 This is a direction-of-work list, not a promise that every item is already implemented or scheduled.
