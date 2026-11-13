@@ -214,7 +214,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   const low = quality === 'low';
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: !low,
+    // MSAA is especially important for the rocket's thin curved silhouette.
+    // Disabling it on low-tier GPUs made the enlarged hull look visibly jagged.
+    antialias: true,
     alpha: false,
     powerPreference: 'high-performance',
   });
@@ -564,7 +566,9 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   let pxBase = 1000;
   // Render resolution steps down when frames run slow (see frameWatch below).
   const DPR_STEPS = [1.25, 1, 0.85, 0.7];
-  let dprStep = low ? 2 : 0;
+  // Keep low-tier rendering at native resolution initially; the frame watchdog
+  // can still step down if the GPU cannot sustain it.
+  let dprStep = low ? 1 : 0;
   function resize(w, h) {
     W = Math.max(1, w);
     H = Math.max(1, h);
