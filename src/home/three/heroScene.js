@@ -565,7 +565,7 @@ export function createHeroScene(canvas, { sites, dom, onArrive, textures = {}, q
   let dpr = 1;
   let pxBase = 1000;
   // Render resolution steps down when frames run slow (see frameWatch below).
-  const DPR_STEPS = [1.25, 1, 0.85, 0.7];
+  const DPR_STEPS = [1.5, 1.25, 1, 0.85, 0.7];
   // Keep low-tier rendering at native resolution initially; the frame watchdog
   // can still step down if the GPU cannot sustain it.
   let dprStep = low ? 1 : 0;
